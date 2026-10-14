@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Insights — Weekly insights for finance professionals</title>
+<meta name="description" content="Finance Insights: practical weekly articles on FP&A, controls, month-end close, AI in finance and finance careers.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpolygon points='32,3 58,17.5 58,46.5 32,61 6,46.5 6,17.5' fill='%230d5859'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial' font-weight='900' font-size='22' fill='%23C9A86A'%3EFI%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="seed-posts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --teal-900:#062628;--teal-850:#073334;--teal-800:#093D3E;--teal-700:#0A4840;--teal-600:#0d5859;--teal-500:#1B7D69;--teal-400:#2d9b9d;--teal-300:#7eb5b6;--teal-200:#9dc9ca;
+  --gold:#C9A86A;--gold-l:#e2c993;--cream:#E8E2D0;--cream-l:#F6F2E7;--ink:#0A2E2F;--muted:#5d7273;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--serif:'Source Serif 4',Georgia,serif;--mono:'JetBrains Mono',Consolas,monospace;--r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:inherit}
+
+/* ---------- brand ---------- */
+.brand{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none}
+.mark{width:44px;height:44px;flex-shrink:0;filter:drop-shadow(0 6px 14px rgba(0,0,0,.3))}
+.wordmark{display:flex;flex-direction:column;line-height:1}
+.wordmark b{font-weight:900;letter-spacing:3px;font-size:15px;color:#fff}
+.wordmark b+b{margin-top:3px}
+.wordmark small{font-size:10px;letter-spacing:1.6px;color:var(--gold);margin-top:5px;text-transform:uppercase;font-weight:600}
+.chev{color:var(--gold);font-size:9px;line-height:1}
+
+/* ---------- PUBLIC ---------- */
+body.public{background:var(--cream-l);color:var(--ink)}
+.pub-nav{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,var(--teal-600),var(--teal-850));border-bottom:1px solid rgba(201,168,106,.35)}
+.pub-nav .in{max-width:1200px;margin:auto;display:flex;align-items:center;gap:24px;padding:14px 24px}
+.pub-nav nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pub-nav nav a{padding:9px 14px;border-radius:999px;font-size:14px;font-weight:500;color:#d7e6e4;text-decoration:none;cursor:pointer}
+.pub-nav nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.pub-nav nav a.cta{background:var(--gold);color:var(--teal-900);font-weight:700}
+.pub-nav nav a.cta:hover{background:var(--gold-l)}
+
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--teal-700),var(--teal-800) 55%,var(--teal-900));color:#fff}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 1px,transparent 1px 22px)}
+.hero .glow{position:absolute;border-radius:50%;filter:blur(70px);opacity:.25}
+.hero .in{position:relative;max-width:1200px;margin:auto;padding:64px 24px 72px;display:grid;grid-template-columns:1.05fr 1fr;gap:52px;align-items:center}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,106,.45);padding:7px 13px;border-radius:999px}
+.kicker i{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.hero h1{font-size:clamp(38px,5vw,60px);font-weight:900;line-height:1.03;letter-spacing:-1.5px;margin:20px 0 18px}
+.hero h1 span{color:var(--gold)}
+.hero p.lead{font-size:18px;line-height:1.6;color:#c9dbd9;max-width:520px}
+.stats{display:flex;gap:34px;margin-top:30px}
+.stats b{display:block;font-size:32px;font-weight:900}
+.stats span{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal-200)}
+.featured{background:#fff;color:var(--ink);border-radius:22px;overflow:hidden;cursor:pointer;box-shadow:0 30px 70px -20px rgba(0,0,0,.55);transition:transform .3s}
+.featured:hover{transform:translateY(-5px)}
+.featured .cover{height:270px}
+.featured .body{padding:22px 26px 26px}
+.featured h2{font-family:var(--serif);font-size:25px;line-height:1.22;margin:10px 0}
+.featured p{color:var(--muted);line-height:1.55}
+
+/* brand cover */
+.cover{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--teal-700),var(--teal-800) 60%,var(--teal-900));background-size:cover;background-position:center;color:#fff}
+.cover::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 1px,transparent 1px 18px)}
+.cover .hex{position:absolute;right:-18px;top:50%;transform:translateY(-50%);height:118%;aspect-ratio:1;opacity:.95}
+.cover .pill{position:absolute;left:16px;top:16px;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:6px 11px;border-radius:999px;color:var(--teal-900)}
+.cover .iss{position:absolute;left:16px;bottom:14px;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.cover .ttl{position:absolute;left:22px;right:46%;top:50%;transform:translateY(-50%);font-weight:900;font-size:22px;line-height:1.12;letter-spacing:-.3px}
+.cover .ttl::before{content:'';display:block;width:34px;height:3px;background:var(--gold);margin-bottom:12px}
+.cover.img .hex,.cover.img .ttl{display:none}
+
+.ticker{background:var(--teal-900);color:#cfe0de;white-space:nowrap;overflow:hidden;padding:12px 0;font-size:13px;border-top:1px solid rgba(201,168,106,.25)}
+.ticker .track{display:inline-block;animation:scroll 50s linear infinite}
+.ticker span{margin:0 26px}.ticker b{color:var(--gold)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+.pub-main{max-width:1200px;margin:auto;padding:44px 24px 70px;display:grid;grid-template-columns:1fr 310px;gap:40px}
+.sec-h{display:flex;align-items:end;justify-content:space-between;margin-bottom:18px}
+.sec-h h3{font-size:24px;font-weight:900;letter-spacing:-.4px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:24px}
+.chip{padding:8px 15px;border-radius:999px;border:1px solid rgba(10,46,47,.15);font-size:13px;font-weight:600;background:#fff;display:flex;gap:7px;align-items:center}
+.chip i{width:8px;height:8px;border-radius:50%}
+.chip:hover{border-color:var(--teal-600)}
+.chip.on{background:var(--teal-700);color:#fff;border-color:var(--teal-700)}
+.search{margin-left:auto;position:relative}
+.search input{padding:10px 14px 10px 36px;border-radius:999px;border:1px solid rgba(10,46,47,.15);background:#fff;width:240px;outline:none}
+.search input:focus{border-color:var(--gold)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:24px}
+.card{background:#fff;border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.25s;border:1px solid rgba(10,46,47,.07);display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:0 22px 44px -20px rgba(6,38,40,.45)}
+.card .cover{height:150px}
+.card .cover .ttl{display:none}
+.card .body{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1}
+.card h4{font-family:var(--serif);font-size:19px;line-height:1.3;margin:8px 0}
+.card p{font-size:14px;color:var(--muted);line-height:1.55;flex:1}
+.card .foot{display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:#7d8d8e}
+.meta{font-size:12.5px;color:#6c8081;display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-weight:500}
+.meta .dot{width:3px;height:3px;border-radius:50%;background:currentColor}
+.meta b{color:var(--teal-500);letter-spacing:1px;font-size:11px}
+.empty{padding:60px;text-align:center;color:#7d8d8e;background:#fff;border-radius:var(--r);grid-column:1/-1}
+.side .box{background:#fff;border-radius:var(--r);padding:22px;margin-bottom:22px;border:1px solid rgba(10,46,47,.07)}
+.side h5{font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:14px;color:var(--teal-600)}
+.side .brandbox{background:linear-gradient(135deg,var(--teal-700),var(--teal-900));color:#fff;text-align:center}
+.side .brandbox .mark{width:74px;height:74px;margin:4px auto 12px;display:block}
+.side .brandbox p{color:#c9dbd9;font-size:14px;line-height:1.5;margin:10px 0 16px}
+.li-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:#0a66c2;color:#fff;padding:11px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none}
+.up-item{display:flex;gap:14px;padding:11px 0;border-bottom:1px dashed rgba(10,46,47,.14)}
+.up-item:last-child{border:none}
+.up-date{min-width:50px;text-align:center;background:var(--cream);border-radius:10px;padding:6px 4px}
+.up-date b{display:block;font-size:20px;font-weight:900}
+.up-date span{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--teal-500);font-weight:800}
+.up-item p{font-size:14px;font-weight:700;line-height:1.35}
+.up-item small{font-size:12px;color:#7d8d8e}
+.topic-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:14px;cursor:pointer;font-weight:500}
+.topic-row:hover{color:var(--teal-500)}
+.topic-row span{background:var(--cream);border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700}
+.author{display:flex;gap:14px;align-items:center}
+.avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#a88947);display:grid;place-items:center;color:var(--teal-900);font-weight:900;font-size:18px;flex-shrink:0}
+.author b{font-size:16px}.author small{display:block;color:#6c8081;font-size:13px;margin-top:2px}
+
+.article{max-width:780px;margin:auto;padding:36px 24px 80px}
+.back{display:inline-flex;gap:6px;align-items:center;font-size:14px;color:#6c8081;margin-bottom:22px;font-weight:600;cursor:pointer}
+.back:hover{color:var(--teal-600)}
+.article .cover{height:340px;border-radius:22px;margin-bottom:30px}
+.article .cover .ttl{font-size:30px}
+.article h1{font-family:var(--serif);font-size:clamp(32px,4.4vw,46px);line-height:1.12;letter-spacing:-.6px;margin:14px 0 14px}
+.article .excerpt{font-family:var(--serif);font-size:21px;line-height:1.5;color:var(--teal-600);margin-bottom:24px;border-left:4px solid var(--gold);padding-left:18px}
+.prose{font-family:var(--serif);font-size:19px;line-height:1.75;color:#1d3b3c;margin-top:30px}
+.prose h2{font-family:var(--sans);font-size:24px;font-weight:800;letter-spacing:-.3px;margin:42px 0 12px;color:var(--teal-700)}
+.prose h3{font-family:var(--sans);font-size:19px;font-weight:800;margin:28px 0 8px;color:var(--teal-600)}
+.prose h4{font-family:var(--sans);font-size:16px;font-weight:800;margin:22px 0 6px;color:var(--teal-500);text-transform:uppercase;letter-spacing:.6px}
+.prose p{margin-bottom:18px}
+.prose ul,.prose ol{margin:0 0 22px 24px}.prose li{margin-bottom:7px}
+.prose li::marker{color:var(--gold)}
+.prose blockquote{margin:28px 0;padding:22px 26px;background:linear-gradient(135deg,var(--teal-700),var(--teal-850));color:#fff;border-radius:14px;font-size:21px;font-style:italic;position:relative}
+.prose blockquote::before{content:'“';position:absolute;top:-14px;left:16px;font-size:70px;color:var(--gold);font-style:normal;line-height:1}
+.prose code{font-family:var(--mono);background:var(--cream);padding:2px 6px;border-radius:6px;font-size:.85em}
+.prose a{color:var(--teal-500)}
+.prose strong{color:var(--teal-800)}
+.prose .tbl{overflow-x:auto;margin:24px 0}
+.prose table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14.5px;line-height:1.45;background:#fff;border-radius:12px;overflow:hidden}
+.prose th{background:var(--teal-700);color:#fff;text-align:left;padding:11px 13px;font-weight:700}
+.prose td{padding:11px 13px;border-bottom:1px solid #e6e1d2;vertical-align:top}
+.prose tr:nth-child(even) td{background:#fbf9f3}
+.formula{font-family:var(--mono);background:var(--teal-900);color:var(--gold);padding:18px 22px;border-radius:14px;margin:24px 0;font-size:15px}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin:34px 0 24px}
+.tag{font-size:13px;background:#fff;border:1px solid rgba(10,46,47,.12);padding:5px 12px;border-radius:999px;color:var(--teal-600);font-weight:600}
+.share{display:flex;gap:10px;align-items:center;padding:20px 0;border-top:1px solid rgba(10,46,47,.12);border-bottom:1px solid rgba(10,46,47,.12);flex-wrap:wrap}
+.sbtn{display:inline-flex;gap:8px;align-items:center;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700;background:#fff;border:1px solid rgba(10,46,47,.12);text-decoration:none}
+.sbtn.li{background:#0a66c2;color:#fff;border-color:#0a66c2}
+.navpair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+.navpair div{background:#fff;padding:18px;border-radius:14px;cursor:pointer;border:1px solid rgba(10,46,47,.07)}
+.navpair div:hover{border-color:var(--gold)}
+.navpair small{color:#7d8d8e;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+.navpair p{font-family:var(--serif);font-weight:700;margin-top:4px}
+footer.pub{background:var(--teal-900);color:#9fb7b5;padding:44px 24px;text-align:center;font-size:14px;border-top:3px solid var(--gold)}
+footer.pub .brand{justify-content:center;margin-bottom:14px}
+
+/* ---------- ADMIN ---------- */
+body.admin{background:var(--teal-900);color:#e3eeec}
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--teal-800),var(--teal-900));border-right:1px solid rgba(201,168,106,.18);padding:22px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.snav{margin-top:28px;display:flex;flex-direction:column;gap:3px}
+.snav a{display:flex;gap:12px;align-items:center;padding:11px 14px;border-radius:12px;font-size:14px;font-weight:500;color:#9fbab7;text-decoration:none;cursor:pointer}
+.snav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.snav a.on{background:linear-gradient(90deg,rgba(201,168,106,.2),rgba(201,168,106,.02));color:var(--gold-l);box-shadow:inset 3px 0 0 var(--gold)}
+.snav .count{margin-left:auto;background:rgba(255,255,255,.08);font-size:11px;padding:2px 8px;border-radius:999px}
+.snav .new{background:var(--gold);color:var(--teal-900)!important;font-weight:800;margin:6px 0 10px}
+.snav .new:hover{background:var(--gold-l)}
+.sidebar .bottom{margin-top:auto;font-size:12px;color:#7d9997;padding:6px}
+.status-chip{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 12px;border-radius:10px;margin-bottom:8px}
+.status-chip i{width:8px;height:8px;border-radius:50%;animation:pulse 1.6s infinite}
+.status-chip.cloud{background:rgba(45,155,157,.15);color:#8fe0d0}.status-chip.cloud i{background:#2d9b9d}
+.status-chip.local{background:rgba(201,168,106,.14);color:var(--gold-l)}.status-chip.local i{background:var(--gold)}
+.main{padding:28px 36px 60px;min-width:0}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;gap:16px;flex-wrap:wrap}
+.topbar h1{font-size:28px;font-weight:900;letter-spacing:-.5px}
+.topbar p{color:#8eaaa7;font-size:14px;margin-top:5px}
+.abtn{text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;background:rgba(255,255,255,.06);color:#e3eeec;border:1px solid rgba(255,255,255,.09);white-space:nowrap}
+.abtn:hover{background:rgba(255,255,255,.11)}
+.abtn.gold{background:var(--gold);color:var(--teal-900);border-color:var(--gold)}
+.abtn.gold:hover{background:var(--gold-l)}
+.abtn.teal{background:var(--teal-500);border-color:var(--teal-500);color:#fff}
+.abtn.li{background:#0a66c2;border-color:#0a66c2;color:#fff}
+.abtn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+.abtn.danger:hover{background:rgba(232,93,117,.2);color:#ffb0bf}
+.abtn:disabled{opacity:.5;cursor:wait}
+.banner{background:linear-gradient(90deg,rgba(201,168,106,.18),rgba(201,168,106,.05));border:1px solid rgba(201,168,106,.4);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:22px}
+.kpi{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;right:-24px;top:-24px;width:84px;height:84px;background:var(--c);opacity:.13;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.kpi span{font-size:11px;color:#8eaaa7;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+.kpi b{display:block;font-size:32px;font-weight:900;margin-top:6px;color:#fff}
+.kpi small{font-size:12px;color:var(--c)}
+.panels{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:20px}
+.panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:22px}
+.panel h3{font-size:15px;font-weight:800;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.panel h3 small{font-weight:500;color:#8eaaa7;font-size:12px}
+.chart{display:flex;align-items:flex-end;gap:9px;height:180px;border-bottom:1px solid rgba(255,255,255,.08)}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.bar{width:100%;max-width:32px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,var(--gold-l),var(--gold));min-height:4px}
+.bar.sch{background:linear-gradient(180deg,#5cc5b5,var(--teal-500))}
+.bar.pl{background:repeating-linear-gradient(45deg,rgba(232,226,208,.35) 0 4px,rgba(232,226,208,.12) 4px 8px)}
+.bar.zero{background:rgba(255,255,255,.08)}
+.bar-col.now::before{content:'NOW';position:absolute;top:-4px;font-size:9px;letter-spacing:1px;color:var(--gold)}
+.xl{display:flex;gap:9px;margin-top:8px}.xl span{flex:1;text-align:center;font-size:10px;color:#6f8b89}
+.legend{display:flex;gap:16px;font-size:12px;color:#9fbab7;margin-top:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.queue-item{display:flex;gap:14px;align-items:center;padding:11px;border-radius:12px;background:rgba(255,255,255,.03);margin-bottom:9px;cursor:pointer;border:1px solid transparent}
+.queue-item:hover{border-color:rgba(201,168,106,.45)}
+.queue-item .sw{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;font-weight:900;font-size:13px;color:var(--teal-900)}
+.queue-item p{font-size:14px;font-weight:700;line-height:1.3}
+.queue-item small{font-size:12px;color:#8eaaa7}
+.cd{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:#8fe0d0;background:rgba(27,125,105,.2);padding:5px 9px;border-radius:8px;white-space:nowrap}
+.cd.pl{color:var(--cream);background:rgba(232,226,208,.1)}
+.mix-row{margin-bottom:14px}
+.mix-row div:first-child{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:#cfe0de}
+.mix-track{height:8px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.mix-track i{display:block;height:100%;border-radius:999px}
+.log{max-height:270px;overflow:auto}
+.log div{display:flex;gap:10px;font-size:13px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);color:#cfe0de}
+.log time{color:#6f8b89;font-size:11px;min-width:96px;font-family:var(--mono)}
+.pill-s{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.pill-s::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill-s.published,.pill-s.live{background:rgba(201,168,106,.16);color:var(--gold-l)}
+.pill-s.scheduled{background:rgba(27,125,105,.22);color:#8fe0d0}
+.pill-s.draft{background:rgba(255,255,255,.08);color:#9fbab7}
+.pill-s.planned{background:rgba(232,226,208,.1);color:var(--cream)}
+table.posts{width:100%;border-collapse:collapse;font-size:14px}
+table.posts th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6f8b89;font-weight:700;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+table.posts td{padding:13px 12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+table.posts tr:hover td{background:rgba(255,255,255,.02)}
+.tt{display:flex;gap:12px;align-items:center}
+.tt .sw{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;font-weight:900;font-size:12px;color:var(--teal-900)}
+.tt b{font-weight:700;display:block;max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt small{color:#8eaaa7;font-size:12px}
+.actions{display:flex;gap:6px;justify-content:flex-end}
+.filterbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:4px}
+.seg button{padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;color:#9fbab7}
+.seg button.on{background:rgba(201,168,106,.18);color:var(--gold-l)}
+.ainput{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);color:#e3eeec;border-radius:11px;padding:10px 13px;outline:none;width:100%}
+.ainput:focus{border-color:var(--gold)}
+select.ainput option{background:var(--teal-850)}
+.cal-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.cal-head h2{font-size:22px;font-weight:900;min-width:210px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .dow{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6f8b89;padding:6px;text-align:center;font-weight:700}
+.day{min-width:0;min-height:108px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;cursor:pointer;position:relative}
+.day:hover{border-color:rgba(255,255,255,.2)}
+.day.out{opacity:.35}
+.day.today{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.day.slot{background:rgba(201,168,106,.06)}
+.day.slot::after{content:'⬢ issue day';position:absolute;bottom:6px;right:8px;font-size:9px;letter-spacing:.6px;color:rgba(201,168,106,.55);text-transform:uppercase}
+.day.over{background:rgba(27,125,105,.2);border-color:var(--teal-500)}
+.day .n{font-size:12px;font-weight:700;color:#9fbab7}
+.day.today .n{color:var(--gold)}
+.ev{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.25;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.live{background:rgba(201,168,106,.2);color:var(--gold-l)}
+.ev.scheduled{background:rgba(27,125,105,.3);color:#a6ecdf;cursor:grab}
+.ev.draft,.ev.planned{border:1px dashed rgba(232,226,208,.35);color:var(--cream);cursor:grab}
+.editor{display:grid;grid-template-columns:1fr 340px;gap:22px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;font-weight:700;color:#9fbab7;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+.title-in{font-family:var(--serif);font-size:28px;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.12);border-radius:0;padding:8px 0 14px;font-weight:700}
+.mdbar{display:flex;gap:4px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-bottom:none;border-radius:11px 11px 0 0;padding:6px;flex-wrap:wrap}
+.mdbar button{padding:6px 10px;border-radius:7px;font-size:13px;color:#9fbab7;font-weight:700}
+.mdbar button:hover{background:rgba(255,255,255,.08);color:#fff}
+.mdbar .sep{width:1px;background:rgba(255,255,255,.1);margin:4px}
+textarea.content{min-height:420px;border-radius:0 0 11px 11px;font-family:var(--mono);font-size:13px;line-height:1.7;resize:vertical}
+.preview-wrap{background:var(--cream-l);color:var(--ink);border-radius:14px;padding:24px 28px;max-height:680px;overflow:auto}
+.preview-wrap .prose{font-size:16px;margin-top:12px}
+.preview-wrap h1{font-family:var(--serif);font-size:28px;line-height:1.15;margin-top:8px}
+.preview-wrap .cover{height:170px;border-radius:12px}
+.preview-wrap .cover .ttl{font-size:17px}
+.pubbox .opt{display:flex;gap:12px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.09);margin-bottom:8px;cursor:pointer;align-items:flex-start}
+.pubbox .opt.on{border-color:var(--gold);background:rgba(201,168,106,.08)}
+.pubbox .opt input{margin-top:3px;accent-color:var(--gold)}
+.pubbox .opt b{font-size:14px;display:block}.pubbox .opt small{font-size:12px;color:#8eaaa7}
+.check{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer;color:#cfe0de}
+.check input{accent-color:var(--gold);width:16px;height:16px}
+.hint{font-size:12px;color:#6f8b89;margin-top:6px;line-height:1.5}
+.lock{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,var(--teal-600),var(--teal-900) 65%)}
+.lock .box{width:380px;background:rgba(6,38,40,.85);border:1px solid rgba(201,168,106,.3);border-radius:22px;padding:34px;text-align:center;backdrop-filter:blur(10px)}
+.lock .mark{width:80px;height:80px;margin:0 auto 14px;display:block}
+.lock h2{font-size:24px;font-weight:900;margin-bottom:6px}
+.lock p{color:#8eaaa7;font-size:14px;margin-bottom:20px;line-height:1.5}
+.lock .ainput{margin-bottom:10px}
+.modal-bg{position:fixed;inset:0;background:rgba(3,18,19,.75);backdrop-filter:blur(6px);display:none;place-items:center;z-index:100;padding:20px}
+.modal-bg.show{display:grid}
+.modal{background:var(--teal-850);color:#e3eeec;border:1px solid rgba(201,168,106,.3);border-radius:20px;padding:26px;width:min(620px,100%);max-height:90vh;overflow:auto}
+.modal h3{font-size:20px;font-weight:900;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.modal p.sub{color:#8eaaa7;font-size:13px;margin-bottom:16px}
+.modal textarea{min-height:320px;line-height:1.6}
+.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(140px);background:var(--teal-800);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:200;transition:.35s;box-shadow:0 10px 30px rgba(0,0,0,.35);border-left:4px solid var(--gold)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.loading{min-height:100vh;display:grid;place-items:center;background:var(--teal-900)}
+.loading .mark{width:90px;height:90px;animation:spin 2.4s ease-in-out infinite}
+@keyframes spin{50%{transform:rotate(180deg) scale(.9)}}
+@media(max-width:1150px){.kpis{grid-template-columns:repeat(3,1fr)}.panels,.editor{grid-template-columns:1fr}}
+@media(max-width:900px){.hero .in,.pub-main{grid-template-columns:1fr}.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}.snav{flex-direction:row;flex-wrap:wrap}.sidebar .bottom{display:none}.main{padding:20px}.kpis{grid-template-columns:repeat(2,1fr)}.day{min-height:78px}.search{margin-left:0}.pub-nav nav a:not(.cta){display:none}}
+</style>
+</head>
+<body class="public">
+<div id="app"><div class="loading"><svg class="mark" viewBox="0 0 64 64" id="loadMark"></svg></div></div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   FINANCE INSIGHTS — blog + publishing studio
+   • Cloud mode  : config.js has Supabase URL + anon key → shared online data, email login
+   • Local mode  : no config → data stays in this browser (demo / offline), PIN login
+   ===================================================================== */
+const CFG = window.FI_CONFIG || {};
+const CLOUD = !!(CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase);
+const LS_KEY = 'finance_insights_v1';
+const CAT = {'Finance':'#C9A86A','AI':'#2d9b9d','Tech':'#2d9b9d','Career Growth':'#E8E2D0'};
+const catColor = c => CAT[c] || '#9dc9ca';
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DEFAULT_SETTINGS = {blogName:'Finance Insights',tagline:'Weekly insights for finance professionals.',author:'Mohamed Yacoub',role:'Author of the Finance Insights LinkedIn newsletter',linkedin:'https://www.linkedin.com/',weeklyDay:6,weeklyTime:'08:00',showUpcoming:true,pin:'1234'};
+
+/* ---------- brand SVG (recreated from finance-insights-2k-logo) ---------- */
+function markSVG(id){id=id||('m'+Math.random().toString(36).slice(2,7));return `<svg class="mark" viewBox="0 0 64 64" aria-label="Finance Insights"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d5859"/><stop offset=".5" stop-color="#0a4445"/><stop offset="1" stop-color="#073334"/></linearGradient></defs>
+<polygon points="32,3 58,17.5 58,46.5 32,61 6,46.5 6,17.5" fill="url(#${id})" stroke="rgba(255,255,255,.28)" stroke-width="1.6"/>
+<polygon points="4,24 17,15 15,33" fill="#1a7b7d" opacity=".9"/><polygon points="8,32 19,26 17,40" fill="#2d9b9d" opacity=".8"/>
+<polygon points="15,4 29,6 20,17" fill="#e8dcc8" opacity=".95"/><polygon points="45,52 60,45 56,60" fill="#c8a869"/>
+<path d="M41 22 L52 15" stroke="#9dc9ca" stroke-width="2.6" stroke-linecap="round"/><polygon points="49,11 56,13.5 51.5,19" fill="#9dc9ca"/>
+<line x1="20" y1="22" x2="44" y2="22" stroke="#c8a869" stroke-width=".9" opacity=".7"/><line x1="20" y1="44" x2="44" y2="44" stroke="#c8a869" stroke-width=".9" opacity=".7"/>
+<text x="32" y="39.5" text-anchor="middle" font-family="Inter,Segoe UI,Arial" font-weight="900" font-size="17" fill="#fff" letter-spacing="1">FI</text></svg>`}
+function brandHTML(sub,onclick){return `<a class="brand" onclick="${onclick||"go('#/')"}">${markSVG()}<div class="wordmark"><span class="chev">▲</span><b>FINANCE</b><b>INSIGHTS</b>${sub?`<small>${sub}</small>`:'<span class="chev" style="margin-top:2px">▼</span>'}</div></a>`}
+function hexSVG(issue,color){return `<svg class="hex" viewBox="0 0 200 200"><polygon points="100,8 182,54 182,146 100,192 18,146 18,54" fill="rgba(13,88,89,.85)" stroke="rgba(255,255,255,.18)" stroke-width="3"/>
+<polygon points="8,70 46,44 40,96" fill="#1a7b7d" opacity=".85"/><polygon points="38,14 82,20 56,52" fill="#e8dcc8" opacity=".9"/><polygon points="150,160 192,140 182,190" fill="${color}" />
+<polygon points="86,70 132,100 86,130" fill="${color}" opacity=".95"/>
+<text x="100" y="178" text-anchor="middle" font-family="Inter,Arial" font-weight="900" font-size="20" fill="rgba(255,255,255,.55)" letter-spacing="2">${issue?('#'+issue):''}</text></svg>`}
+function coverHTML(p){const c=catColor(p.category);
+  const bg=p.coverImg?`style="background-image:linear-gradient(rgba(6,38,40,.25),rgba(6,38,40,.55)),url('${esc(p.coverImg)}')"`:'';
+  return `<div class="cover ${p.coverImg?'img':''}" ${bg}>${hexSVG(p.issue,c)}<span class="pill" style="background:${c}">${esc(p.category||'Finance')}</span>
+  <div class="ttl">${esc(p.title||'')}</div>${p.issue?`<span class="iss">Issue ${p.issue}</span>`:''}</div>`}
+const swHTML=p=>`<div class="sw" style="background:${catColor(p.category)}">${p.issue?('#'+p.issue):'—'}</div>`;
+const ICON={search:'<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l4 4"/></svg>',
+li:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>'};
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const now=()=>new Date();
+const uuid=()=>(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)}));
+const fmtD=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const fmtDT=d=>new Date(d).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const pad=n=>String(n).padStart(2,'0');
+const toLocalInput=d=>{d=new Date(d);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const dayKey=d=>{d=new Date(d);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const readTime=t=>Math.max(1,Math.round((t||'').split(/\s+/).length/230));
+const slugify=s=>String(s||'post').toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'post';
+const initials=n=>esc((n||'FI').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase());
+function weekStart(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function nextSlot(from,dow,time){const[h,m]=time.split(':').map(Number);const d=new Date(from);d.setHours(h,m,0,0);let add=(dow-d.getDay()+7)%7;if(add===0&&d<=from)add=7;d.setDate(d.getDate()+add);return d}
+function countdown(t){let s=(new Date(t)-now())/1000;if(s<=0)return 'due now';const d=Math.floor(s/86400);s-=d*86400;const h=Math.floor(s/3600);const m=Math.floor((s-h*3600)/60);return d?`in ${d}d ${h}h`:h?`in ${h}h ${m}m`:`in ${m}m`}
+const isLive=p=>p.status==='published'||(p.status==='scheduled'&&p.publishAt&&new Date(p.publishAt)<=now());
+const effStatus=p=>isLive(p)?'live':p.status==='draft'&&p.publishAt?'planned':p.status;
+const STATUS_LABEL={live:'Published',scheduled:'Scheduled',draft:'Draft',planned:'Planned'};
+
+/* ---------- markdown (headings, lists, quotes, tables, formula ::) ---------- */
+function md(src){
+  const inline=s=>s.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>').replace(/(^|\s)_([^_\n]+)_(?=\s|$|[.,;:!?])/g,'$1<em>$2</em>').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const lines=esc(src||'').split('\n');let html='',list=null,para=[];
+  const fp=()=>{if(para.length){html+=`<p>${inline(para.join(' '))}</p>`;para=[]}};
+  const cl=()=>{if(list){html+=`</${list}>`;list=null}};
+  for(let i=0;i<lines.length;i++){
+    const l=lines[i].trimEnd();let m;
+    if(!l.trim()){fp();cl();continue}
+    if(l.trim().startsWith('|')){fp();cl();const rows=[];while(i<lines.length&&lines[i].trim().startsWith('|')){rows.push(lines[i].trim());i++}i--;
+      const cells=r=>r.replace(/^\||\|$/g,'').split('|').map(c=>inline(c.trim()));
+      const body=rows.filter((r,k)=>!(k===1&&/^\|?[\s:|-]+\|?$/.test(r)));
+      html+='<div class="tbl"><table><thead><tr>'+cells(body[0]).map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+body.slice(1).map(r=>'<tr>'+cells(r).map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>';continue}
+    if(m=l.match(/^(#{2,4})\s+(.*)/)){fp();cl();const n=m[1].length;html+=`<h${n}>${inline(m[2])}</h${n}>`;continue}
+    if(m=l.match(/^&gt;\s?(.*)/)){fp();cl();html+=`<blockquote>${inline(m[1])}</blockquote>`;continue}
+    if(m=l.match(/^::\s?(.*)/)){fp();cl();html+=`<div class="formula">${inline(m[1])}</div>`;continue}
+    if(m=l.match(/^[-*]\s+(.*)/)){fp();if(list!=='ul'){cl();html+='<ul>';list='ul'}html+=`<li>${inline(m[1])}</li>`;continue}
+    if(m=l.match(/^\d+\.\s+(.*)/)){fp();if(list!=='ol'){cl();html+='<ol>';list='ol'}html+=`<li>${inline(m[1])}</li>`;continue}
+    cl();para.push(l)}
+  fp();cl();return html}
+
+/* =====================================================================
+   DATA LAYER
+   ===================================================================== */
+let sb=null, S={settings:{...DEFAULT_SETTINGS},posts:[],log:[],upcoming:[]}, AUTH={user:null,isAdmin:false};
+const fromRow=r=>({id:r.id,slug:r.slug,issue:r.issue,title:r.title,excerpt:r.excerpt||'',content:r.content||'',category:r.category||'Finance',tags:r.tags||[],coverImg:r.cover_img||'',series:r.series!==false,status:r.status,publishAt:r.publish_at||'',views:r.views||0,createdAt:r.created_at,updatedAt:r.updated_at});
+const toRow=p=>({id:p.id,slug:p.slug,issue:p.issue||null,title:p.title,excerpt:p.excerpt,content:p.content,category:p.category,tags:p.tags||[],cover_img:p.coverImg||null,series:p.series!==false,status:p.status,publish_at:p.publishAt||null,updated_at:new Date().toISOString()});
+function seedPosts(){return (window.FI_SEED||[]).map(s=>({id:uuid(),views:0,series:true,coverImg:'',...s,publishAt:new Date(s.publishAt).toISOString()}))}
+function localSave(){localStorage.setItem(LS_KEY,JSON.stringify({settings:S.settings,posts:S.posts,log:S.log}))}
+
+const DB={
+  async init(){
+    if(CLOUD){
+      sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+      const {data:{session}}=await sb.auth.getSession();await setUser(session?.user||null);
+      sb.auth.onAuthStateChange((_e,s)=>{setUser(s?.user||null)});
+    }else{
+      let d=null;try{d=JSON.parse(localStorage.getItem(LS_KEY))}catch(e){}
+      if(!d||!d.posts){d={settings:{...DEFAULT_SETTINGS},posts:seedPosts(),log:[{t:new Date().toISOString(),i:'✦',m:`Loaded ${(window.FI_SEED||[]).length} Finance Insights issues`}]}}
+      S.settings={...DEFAULT_SETTINGS,...d.settings};S.posts=d.posts;S.log=d.log||[];localSave();
+      AUTH.isAdmin=sessionStorage.getItem('fi_auth')==='1';
+    }
+  },
+  async load(){
+    if(!CLOUD){S.upcoming=S.posts.filter(p=>p.status==='scheduled'&&!isLive(p));return}
+    const [ps,st,up]=await Promise.all([
+      sb.from('posts').select('*').order('publish_at',{ascending:false,nullsFirst:false}),
+      sb.from('settings').select('data').eq('id',1).maybeSingle(),
+      sb.from('upcoming_posts').select('*').order('publish_at')]);
+    if(ps.error)throw ps.error;
+    S.posts=(ps.data||[]).map(fromRow);
+    if(st.data&&st.data.data)S.settings={...DEFAULT_SETTINGS,...st.data.data};
+    S.upcoming=(up.data||[]).map(r=>({title:r.title,category:r.category,issue:r.issue,publishAt:r.publish_at}));
+    if(AUTH.isAdmin){const l=await sb.from('activity').select('*').order('at',{ascending:false}).limit(60);S.log=(l.data||[]).map(r=>({t:r.at,i:r.icon,m:r.message}))}
+  },
+  async save(p){
+    if(!CLOUD){const i=S.posts.findIndex(x=>x.id===p.id);p.updatedAt=new Date().toISOString();if(i>=0)S.posts[i]=p;else{p.createdAt=p.updatedAt;S.posts.push(p)}localSave();return}
+    const {error}=await sb.from('posts').upsert(toRow(p));if(error)throw error;
+  },
+  async saveMany(arr){
+    if(!CLOUD){arr.forEach(p=>S.posts.push(p));localSave();return}
+    const {error}=await sb.from('posts').insert(arr.map(p=>({...toRow(p),views:p.views||0})));if(error)throw error;
+  },
+  async remove(id){if(!CLOUD){S.posts=S.posts.filter(p=>p.id!==id);localSave();return}const {error}=await sb.from('posts').delete().eq('id',id);if(error)throw error},
+  async view(p){if(AUTH.isAdmin)return;if(!CLOUD){p.views=(p.views||0)+1;localSave();return}sb.rpc('increment_views',{p_id:p.id}).then(()=>{});p.views=(p.views||0)+1},
+  async saveSettings(s){S.settings=s;if(!CLOUD){localSave();return}const {error}=await sb.from('settings').upsert({id:1,data:s});if(error)throw error},
+  async log(i,m){const e={t:new Date().toISOString(),i,m};S.log.unshift(e);S.log=S.log.slice(0,80);if(!CLOUD){localSave();return}sb.from('activity').insert({icon:i,message:m}).then(()=>{})},
+  async publishDue(){ // tidy statuses so the dashboard reflects reality (DB cron does this too)
+    const due=S.posts.filter(p=>p.status==='scheduled'&&new Date(p.publishAt)<=now());
+    for(const p of due){p.status='published';try{await DB.save(p);await DB.log('⚡',`Auto-published “${p.title}”`)}catch(e){}}
+    return due.length}
+};
+async function setUser(u){AUTH.user=u;AUTH.isAdmin=false;if(u&&sb){const {data}=await sb.rpc('is_admin');AUTH.isAdmin=!!data}}
+
+/* =====================================================================
+   ROUTER
+   ===================================================================== */
+let pubFilter='All',pubQuery='',admFilter='all',admQuery='',calMonth=new Date(now().getFullYear(),now().getMonth(),1),draft=null;
+const go=h=>{location.hash=h};
+window.addEventListener('hashchange',()=>route());
+async function route(reload){
+  if(reload){try{await DB.load()}catch(e){toast('⚠ '+(e.message||'Could not load data'))}}
+  const h=location.hash.replace(/^#\/?/,'');const[a,b,c]=h.split('/');
+  if(a==='admin'){
+    document.body.className='admin';
+    if(!AUTH.isAdmin)return renderLock();
+    if(b==='posts')return renderAdmin('posts');
+    if(b==='calendar')return renderAdmin('calendar');
+    if(b==='settings')return renderAdmin('settings');
+    if(b==='new'){draft=null;return renderAdmin('editor',null,c)}
+    if(b==='edit'){if(!draft||draft.id!==c)draft=null;return renderAdmin('editor',c)}
+    return renderAdmin('dashboard');
+  }
+  document.body.className='public';
+  if(a==='post')return renderPost(decodeURIComponent(b||''));
+  renderHome();
+}
+setInterval(()=>{ // keep countdowns and auto-publish fresh
+  const busy=document.activeElement&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if(busy||$('#modalBg').classList.contains('show'))return;
+  if(document.body.className==='admin'&&AUTH.isAdmin)DB.publishDue().then(n=>{if(n)toast(`⚡ ${n} scheduled issue${n>1?'s':''} went live`);route()});
+  else route();
+},60000);
+
+/* =====================================================================
+   PUBLIC SITE
+   ===================================================================== */
+const live=()=>S.posts.filter(isLive).sort((a,b)=>new Date(b.publishAt)-new Date(a.publishAt));
+function pubNav(){return `<header class="pub-nav"><div class="in">${brandHTML('')}
+  <nav><a onclick="go('#/');setTimeout(()=>document.getElementById('issues')?.scrollIntoView(),60)">Issues</a>
+  <a onclick="go('#/');setTimeout(()=>document.getElementById('topics')?.scrollIntoView(),60)">Topics</a>
+  <a href="${esc(S.settings.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>
+  <a class="cta" onclick="go('#/admin')">Dashboard</a></nav></div></header>`}
+function pubFooter(){return `<footer class="pub">${brandHTML(S.settings.tagline)}<div>© ${now().getFullYear()} ${esc(S.settings.author)} · ${esc(S.settings.blogName)}</div></footer>`}
+function catsCount(){const m={};live().forEach(p=>m[p.category]=(m[p.category]||0)+1);return m}
+function upcomingList(){return CLOUD?S.upcoming:S.posts.filter(p=>p.status==='scheduled'&&!isLive(p)).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt))}
+
+function renderHome(){
+  const L=live(),f=L[0],cm=catsCount(),up=upcomingList().slice(0,4),reads=L.reduce((s,p)=>s+(p.views||0),0);
+  const lastIssue=Math.max(0,...L.map(p=>p.issue||0));
+  const tick=L.slice(0,10).map(p=>`<span><b>⬢ ${p.issue?'#'+p.issue:''}</b> ${esc(p.title)}</span>`).join('');
+  $('#app').innerHTML=pubNav()+`
+  <section class="hero"><div class="glow" style="width:320px;height:320px;background:#C9A86A;top:-80px;left:-80px"></div><div class="glow" style="width:300px;height:300px;background:#2d9b9d;bottom:-90px;right:10%"></div>
+   <div class="in"><div>
+    <span class="kicker"><i></i> New issue every ${DAYS[S.settings.weeklyDay]}</span>
+    <h1>Practical finance,<br><span>one insight</span> a week.</h1>
+    <p class="lead">${esc(S.settings.tagline)} FP&amp;A, controls, month-end close, AI in finance and career growth — written for people who do the work.</p>
+    <div class="stats"><div><b>${lastIssue||L.length}</b><span>Latest issue</span></div><div><b>${L.length}</b><span>On the blog</span></div><div><b>${Object.keys(cm).length}</b><span>Topics</span></div>${reads?`<div><b>${reads.toLocaleString()}</b><span>Reads</span></div>`:''}</div>
+   </div>
+   ${f?`<article class="featured" onclick="go('#/post/${esc(f.slug)}')">${coverHTML(f)}<div class="body">
+     <div class="meta"><b>LATEST ISSUE</b><span class="dot"></span>${fmtD(f.publishAt)}<span class="dot"></span>${readTime(f.content)} min read</div>
+     <h2>${esc(f.title)}</h2><p>${esc(f.excerpt)}</p></div></article>`:'<div class="empty">No published issues yet.</div>'}
+  </div></section>
+  ${L.length?`<div class="ticker"><div class="track">${tick}${tick}</div></div>`:''}
+  <main class="pub-main"><div id="issues">
+    <div class="sec-h"><h3>All issues</h3></div>
+    <div class="toolbar">${['All',...Object.keys(cm)].map(c=>`<button class="chip ${pubFilter===c?'on':''}" onclick="pubFilter='${esc(c)}';renderHome()">${c!=='All'?`<i style="background:${catColor(c)}"></i>`:''}${esc(c)}</button>`).join('')}
+      <div class="search">${ICON.search}<input placeholder="Search issues…" value="${esc(pubQuery)}" oninput="pubQuery=this.value;renderGrid()"></div></div>
+    <div class="grid" id="grid"></div></div>
+   <aside class="side">
+    <div class="box brandbox">${markSVG()}<b style="letter-spacing:2px;font-weight:900">FINANCE INSIGHTS</b><p>${esc(S.settings.tagline)} Subscribe to the newsletter on LinkedIn.</p>
+      <a class="li-cta" href="${esc(S.settings.linkedin)}" target="_blank" rel="noopener">${ICON.li} Subscribe on LinkedIn</a></div>
+    ${S.settings.showUpcoming&&up.length?`<div class="box"><h5>Coming up</h5>${up.map(p=>{const d=new Date(p.publishAt);return `<div class="up-item"><div class="up-date"><span>${d.toLocaleDateString('en-GB',{month:'short'})}</span><b>${d.getDate()}</b></div><div><p>${esc(p.title)}</p><small>${p.issue?'Issue '+p.issue+' · ':''}${esc(p.category)} · ${countdown(p.publishAt)}</small></div></div>`}).join('')}</div>`:''}
+    <div class="box" id="topics"><h5>Topics</h5>${Object.entries(cm).map(([c,n])=>`<div class="topic-row" onclick="pubFilter='${esc(c)}';renderHome()"><span style="background:none;padding:0;font-size:14px;font-weight:600"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${catColor(c)};margin-right:8px"></i>${esc(c)}</span><span>${n}</span></div>`).join('')}</div>
+    <div class="box"><div class="author"><div class="avatar">${initials(S.settings.author)}</div><div><b>${esc(S.settings.author)}</b><small>${esc(S.settings.role)}</small></div></div></div>
+   </aside></main>`+pubFooter();
+  renderGrid();
+}
+function renderGrid(){
+  const q=pubQuery.toLowerCase();
+  const L=live().filter(p=>(pubFilter==='All'||p.category===pubFilter)&&(!q||(p.title+p.excerpt+(p.tags||[]).join(' ')+p.category+' '+p.issue).toLowerCase().includes(q)));
+  $('#grid').innerHTML=L.length?L.map(p=>`<article class="card" onclick="go('#/post/${esc(p.slug)}')">${coverHTML(p)}<div class="body">
+    <div class="meta">${p.issue?`<b>ISSUE ${p.issue}</b><span class="dot"></span>`:''}${fmtD(p.publishAt)}<span class="dot"></span>${readTime(p.content)} min</div>
+    <h4>${esc(p.title)}</h4><p>${esc(p.excerpt)}</p>
+    <div class="foot"><span>${(p.tags||[]).slice(0,2).map(t=>'#'+esc(t)).join(' ')}</span>${p.views?`<span>◉ ${p.views}</span>`:''}</div></div></article>`).join(''):'<div class="empty">No issues match your search.</div>';
+}
+function renderPost(slug){
+  const p=S.posts.find(x=>x.slug===slug||x.id===slug);
+  if(!p||!isLive(p)){$('#app').innerHTML=pubNav()+`<div class="article"><a class="back" onclick="go('#/')">← All issues</a><h1>Issue not available</h1><p>This issue has not been published yet.</p></div>`+pubFooter();return}
+  DB.view(p);
+  const L=live(),i=L.findIndex(x=>x.id===p.id),newer=L[i-1],older=L[i+1];
+  document.title=p.title+' — Finance Insights';
+  $('#app').innerHTML=pubNav()+`<article class="article">
+    <a class="back" onclick="go('#/')">← All issues</a>${coverHTML(p)}
+    <div class="meta">${p.issue?`<b>ISSUE ${p.issue}</b><span class="dot"></span>`:''}${esc(p.category)}<span class="dot"></span>${fmtD(p.publishAt)}<span class="dot"></span>${readTime(p.content)} min read</div>
+    <h1 dir="auto">${esc(p.title)}</h1><p class="excerpt" dir="auto">${esc(p.excerpt)}</p>
+    <div class="author"><div class="avatar">${initials(S.settings.author)}</div><div><b>${esc(S.settings.author)}</b><small>${esc(S.settings.role)}</small></div></div>
+    <div class="prose" dir="auto">${md(p.content)}</div>
+    <div class="tags">${(p.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
+    <div class="share"><b style="font-size:14px">Share this issue</b>
+      <a class="sbtn li" target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(location.href)}">${ICON.li} LinkedIn</a>
+      <button class="sbtn" onclick="navigator.clipboard.writeText(location.href);toast('Link copied')">🔗 Copy link</button></div>
+    <div class="navpair">${older?`<div onclick="go('#/post/${esc(older.slug)}')"><small>← Previous issue</small><p>${esc(older.title)}</p></div>`:'<span></span>'}
+      ${newer?`<div onclick="go('#/post/${esc(newer.slug)}')" style="text-align:right"><small>Next issue →</small><p>${esc(newer.title)}</p></div>`:''}</div>
+  </article>`+pubFooter();
+  scrollTo(0,0);
+}
+
+/* =====================================================================
+   ADMIN — login
+   ===================================================================== */
+function renderLock(){
+  const notAdmin=CLOUD&&AUTH.user&&!AUTH.isAdmin;
+  $('#app').innerHTML=`<div class="lock"><div class="box">${markSVG()}<h2>Publishing Studio</h2>
+  ${notAdmin?`<p>Signed in as <b>${esc(AUTH.user.email)}</b>, but this account is not an admin yet.<br>Run step 5 of SETUP.md in Supabase, then reload.</p><button class="abtn" style="width:100%;justify-content:center" onclick="signOut()">Sign out</button>`:
+   CLOUD?`<p>Sign in with your Supabase admin account.</p>
+   <input id="em" class="ainput" type="email" placeholder="Email" autocomplete="username">
+   <input id="pw" class="ainput" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+   <button class="abtn gold" id="signBtn" style="width:100%;justify-content:center" onclick="signIn()">Sign in</button>`
+   :`<p>Local mode — enter your PIN.<br><small>Default PIN 1234 · connect Supabase for online publishing.</small></p>
+   <input id="pin" class="ainput" type="password" maxlength="8" placeholder="PIN" style="text-align:center;letter-spacing:10px;font-size:20px" onkeydown="if(event.key==='Enter')unlock()">
+   <button class="abtn gold" style="width:100%;justify-content:center" onclick="unlock()">Unlock</button>`}
+  <button class="abtn" style="width:100%;justify-content:center;margin-top:8px" onclick="go('#/')">← Back to blog</button></div></div>`;
+  setTimeout(()=>($('#em')||$('#pin'))?.focus(),50);
+}
+async function signIn(){const b=$('#signBtn');b.disabled=true;
+  const {data,error}=await sb.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
+  if(error){b.disabled=false;return toast('⚠ '+error.message)}
+  await setUser(data.user);await route(true)}
+async function signOut(){if(CLOUD)await sb.auth.signOut();AUTH.isAdmin=false;sessionStorage.removeItem('fi_auth');go('#/');route(true)}
+function unlock(){if($('#pin').value===S.settings.pin){sessionStorage.setItem('fi_auth','1');AUTH.isAdmin=true;route()}else{toast('Incorrect PIN');$('#pin').value=''}}
+
+/* =====================================================================
+   ADMIN — shell
+   ===================================================================== */
+function shell(active,inner){
+  const sch=S.posts.filter(p=>p.status==='scheduled'&&!isLive(p)).length;
+  const item=(k,h,ic,l,x='')=>`<a class="${active===k?'on':''}" onclick="go('${h}')"><span>${ic}</span>${l}${x}</a>`;
+  return `<div class="shell"><aside class="sidebar">${brandHTML('Publishing Studio',"go('#/admin')")}
+    <nav class="snav"><a class="new" onclick="go('#/admin/new')"><span>＋</span>New issue</a>
+      ${item('dashboard','#/admin','◈','Dashboard')}
+      ${item('posts','#/admin/posts','☰','All issues',`<span class="count">${S.posts.length}</span>`)}
+      ${item('calendar','#/admin/calendar','▦','Calendar',`<span class="count">${sch}</span>`)}
+      ${item('settings','#/admin/settings','⚙','Settings')}
+      <a onclick="go('#/')"><span>◉</span>View blog</a><a onclick="signOut()"><span>⏻</span>Sign out</a></nav>
+    <div class="bottom">${CLOUD?`<div class="status-chip cloud"><i></i>Supabase · shared online</div>${esc(AUTH.user?.email||'')}`:`<div class="status-chip local"><i></i>Local mode · this browser only</div>Add Supabase keys to config.js to publish online.`}</div>
+  </aside><main class="main">${inner}</main></div>`}
+function renderAdmin(view,id,dateArg){
+  const inner={dashboard:viewDashboard,posts:viewPosts,calendar:viewCalendar,settings:viewSettings,editor:()=>viewEditor(id,dateArg)}[view]();
+  $('#app').innerHTML=shell(view==='editor'?'':view,inner);
+  if(view==='posts')renderRows();
+  if(view==='editor')updatePreview();
+}
+
+/* ---- dashboard ---- */
+function streak(){const ws=new Set(live().map(p=>weekStart(p.publishAt).getTime()));let w=weekStart(now());if(!ws.has(w.getTime()))w.setDate(w.getDate()-7);let n=0;while(ws.has(w.getTime())){n++;w.setDate(w.getDate()-7)}return n}
+function viewDashboard(){
+  const P=S.posts,L=P.filter(isLive),sch=P.filter(p=>p.status==='scheduled'&&!isLive(p)).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt));
+  const planned=P.filter(p=>p.status==='draft'&&p.publishAt&&new Date(p.publishAt)>now()).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt));
+  const drafts=P.filter(p=>p.status==='draft');const reads=L.reduce((s,p)=>s+(p.views||0),0);
+  const ws=weekStart(now()),cols=[];
+  for(let k=-8;k<=4;k++){const s=new Date(ws);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+7);
+    const inW=P.filter(p=>p.publishAt&&new Date(p.publishAt)>=s&&new Date(p.publishAt)<e);
+    cols.push({s,k,l:inW.filter(isLive).length,sc:inW.filter(p=>p.status==='scheduled'&&!isLive(p)).length,pl:inW.filter(p=>p.status==='draft').length})}
+  const max=Math.max(2,...cols.map(c=>c.l+c.sc+c.pl));
+  const cm={};P.forEach(p=>cm[p.category]=(cm[p.category]||0)+1);
+  const slot=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime);
+  const slotPost=P.find(p=>p.publishAt&&dayKey(p.publishAt)===dayKey(slot));
+  const slotMsg=!slotPost?'<span style="color:#ffb0bf">empty — plan an issue</span>':slotPost.status==='scheduled'?`<span style="color:#8fe0d0">✓ Issue ${slotPost.issue||''} scheduled</span>`:`<span style="color:var(--cream)">Issue ${slotPost.issue||''} planned — not written yet</span>`;
+  const queue=[...sch.map(p=>({p,t:'sch'})),...planned.map(p=>({p,t:'pl'}))].slice(0,5);
+  return `${CLOUD&&!P.length?`<div class="banner"><div><b>Your Supabase database is empty.</b> Import your ${(window.FI_SEED||[]).length} Finance Insights issues (10 published + 12 planned) in one click.</div><button class="abtn gold" id="impBtn" onclick="importSeed()">⬆ Import Finance Insights issues</button></div>`:''}
+  <div class="topbar"><div><h1>Good ${now().getHours()<12?'morning':now().getHours()<18?'afternoon':'evening'}, ${esc(S.settings.author.split(' ')[0])}</h1>
+    <p>Next issue day: <b style="color:var(--gold)">${fmtDT(slot)}</b> — ${slotMsg}</p></div>
+    <div style="display:flex;gap:10px"><button class="abtn" onclick="go('#/admin/calendar')">▦ Calendar</button><button class="abtn gold" onclick="go('#/admin/new')">＋ New issue</button></div></div>
+  <div class="kpis">
+    <div class="kpi" style="--c:var(--gold)"><span>Published</span><b>${L.length}</b><small>latest #${Math.max(0,...L.map(p=>p.issue||0))}</small></div>
+    <div class="kpi" style="--c:#5cc5b5"><span>Scheduled</span><b>${sch.length}</b><small>${sch[0]?'next '+countdown(sch[0].publishAt):'nothing queued'}</small></div>
+    <div class="kpi" style="--c:var(--cream)"><span>Planned / drafts</span><b>${drafts.length}</b><small>${planned.length} with a date</small></div>
+    <div class="kpi" style="--c:var(--teal-200)"><span>Reads</span><b>${reads.toLocaleString()}</b><small>${CLOUD?'all visitors':'this browser'}</small></div>
+    <div class="kpi" style="--c:#e8a08f"><span>Weekly streak</span><b>${streak()}</b><small>consecutive weeks</small></div></div>
+  <div class="panels"><div class="panel"><h3>Publishing cadence <small>8 weeks back · 4 ahead</small></h3>
+    <div class="chart">${cols.map(c=>`<div class="bar-col ${c.k===0?'now':''}" title="Week of ${fmtD(c.s)}: ${c.l} live, ${c.sc} scheduled, ${c.pl} planned">
+      ${c.pl?`<div class="bar pl" style="height:${c.pl/max*100}%"></div>`:''}${c.sc?`<div class="bar sch" style="height:${c.sc/max*100}%"></div>`:''}${c.l?`<div class="bar" style="height:${c.l/max*100}%"></div>`:''}${!(c.l+c.sc+c.pl)?'<div class="bar zero"></div>':''}</div>`).join('')}</div>
+    <div class="xl">${cols.map(c=>`<span>${c.s.getDate()}/${c.s.getMonth()+1}</span>`).join('')}</div>
+    <div class="legend"><span><i style="background:var(--gold)"></i>Published</span><span><i style="background:var(--teal-500)"></i>Scheduled</span><span><i style="background:rgba(232,226,208,.35)"></i>Planned (content plan)</span></div></div>
+   <div class="panel"><h3>Up next <small>${sch.length} scheduled · ${planned.length} planned</small></h3>
+    ${queue.length?queue.map(({p,t})=>`<div class="queue-item" onclick="go('#/admin/edit/${p.id}')">${swHTML(p)}<div><p>${esc(p.title)}</p><small>${fmtDT(p.publishAt)}</small></div><span class="cd ${t==='pl'?'pl':''}">${t==='pl'?'to write':countdown(p.publishAt)}</span></div>`).join(''):'<p style="color:#8eaaa7;font-size:14px">Nothing queued.</p>'}</div></div>
+  <div class="panels"><div class="panel"><h3>Recent activity</h3><div class="log">${S.log.slice(0,14).map(l=>`<div><time>${new Date(l.t).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time><span>${esc(l.i)}</span><span>${esc(l.m)}</span></div>`).join('')||'<p style="color:#8eaaa7;font-size:14px">No activity yet.</p>'}</div></div>
+   <div class="panel"><h3>Topic mix <small>all issues</small></h3>${Object.entries(cm).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="mix-row"><div><span>${esc(c)}</span><span>${n}</span></div><div class="mix-track"><i style="width:${n/P.length*100}%;background:${catColor(c)}"></i></div></div>`).join('')}</div></div>`}
+async function importSeed(){const b=$('#impBtn');b.disabled=true;
+  try{await DB.saveMany(seedPosts());await DB.log('⬆','Imported Finance Insights issues');toast('Imported ✓');await route(true)}catch(e){b.disabled=false;toast('⚠ '+e.message)}}
+
+/* ---- posts table ---- */
+function viewPosts(){return `<div class="topbar"><div><h1>All issues</h1><p>Published, scheduled, planned and draft issues.</p></div><button class="abtn gold" onclick="go('#/admin/new')">＋ New issue</button></div>
+  <div class="filterbar"><div class="seg">${[['all','All'],['live','Published'],['scheduled','Scheduled'],['planned','Planned'],['draft','Drafts']].map(([k,l])=>`<button class="${admFilter===k?'on':''}" onclick="admFilter='${k}';renderAdmin('posts')">${l}</button>`).join('')}</div>
+  <input class="ainput" style="max-width:280px;margin-left:auto" placeholder="Search…" value="${esc(admQuery)}" oninput="admQuery=this.value;renderRows()"></div>
+  <div class="panel" style="padding:6px 10px;overflow-x:auto"><table class="posts"><thead><tr><th>Issue</th><th>Status</th><th>Date</th><th>Reads</th><th style="text-align:right">Actions</th></tr></thead><tbody id="rows"></tbody></table></div>`}
+function renderRows(){const q=admQuery.toLowerCase();
+  const rows=S.posts.filter(p=>(admFilter==='all'||effStatus(p)===admFilter)&&(!q||(p.title+p.category+' '+p.issue).toLowerCase().includes(q))).sort((a,b)=>(b.issue||0)-(a.issue||0)||new Date(b.publishAt||0)-new Date(a.publishAt||0));
+  $('#rows').innerHTML=rows.length?rows.map(p=>{const st=effStatus(p);return `<tr>
+    <td><div class="tt">${swHTML(p)}<div><b>${esc(p.title||'Untitled')}</b><small>${esc(p.category)}</small></div></div></td>
+    <td><span class="pill-s ${st}">${STATUS_LABEL[st]}</span></td>
+    <td style="color:#9fbab7;font-size:13px">${p.publishAt?fmtDT(p.publishAt):'—'}${st==='scheduled'?`<br><span style="color:#8fe0d0;font-size:12px">${countdown(p.publishAt)}</span>`:''}</td>
+    <td>${p.views||0}</td>
+    <td><div class="actions"><button class="abtn sm" onclick="go('#/admin/edit/${p.id}')">Edit</button>
+      ${st==='live'?`<button class="abtn sm" onclick="unpublish('${p.id}')">Unpublish</button>`:`<button class="abtn sm teal" onclick="publishNow('${p.id}')">Publish now</button>`}
+      <button class="abtn sm li" title="LinkedIn version" onclick="linkedinModal('${p.id}')">${ICON.li}</button>
+      <button class="abtn sm" title="Duplicate" onclick="duplicate('${p.id}')">⧉</button>
+      <button class="abtn sm danger" title="Delete" onclick="delPost('${p.id}')">✕</button></div></td></tr>`}).join(''):'<tr><td colspan="5" style="text-align:center;color:#8eaaa7;padding:40px">No issues found.</td></tr>'}
+
+/* ---- calendar ---- */
+function viewCalendar(){
+  const y=calMonth.getFullYear(),m=calMonth.getMonth(),start=weekStart(new Date(y,m,1)),cells=[];
+  for(let i=0;i<42;i++){const d=new Date(start);d.setDate(d.getDate()+i);cells.push(d)}
+  const map={};S.posts.forEach(p=>{if(p.publishAt)(map[dayKey(p.publishAt)]=map[dayKey(p.publishAt)]||[]).push(p)});const today=dayKey(now());
+  return `<div class="topbar"><div><h1>Content calendar</h1><p>Drag scheduled or planned issues to another day to move them. Click an empty day to plan a new issue.</p></div><button class="abtn gold" onclick="go('#/admin/new')">＋ New issue</button></div>
+  <div class="cal-head"><button class="abtn sm" onclick="calShift(-1)">‹</button><h2>${calMonth.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h2><button class="abtn sm" onclick="calShift(1)">›</button>
+   <button class="abtn sm" onclick="calMonth=new Date(now().getFullYear(),now().getMonth(),1);renderAdmin('calendar')">Today</button>
+   <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--gold)"></i>Published</span><span><i style="background:var(--teal-500)"></i>Scheduled</span><span><i style="border:1px dashed var(--cream)"></i>Planned / draft</span></div></div>
+  <div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dow">${d}</div>`).join('')}
+  ${cells.map(d=>{const k=dayKey(d),evs=(map[k]||[]).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt));
+   return `<div class="day ${d.getMonth()!==m?'out':''} ${k===today?'today':''} ${d.getDay()==S.settings.weeklyDay?'slot':''}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropOn(event,'${k}')" onclick="if(event.target===this||event.target.classList.contains('n'))go('#/admin/new/${k}')">
+    <span class="n">${d.getDate()}</span>${evs.map(p=>{const st=effStatus(p);return `<div class="ev ${st}" ${st!=='live'?`draggable="true" ondragstart="event.dataTransfer.setData('text','${p.id}')"`:''} onclick="go('#/admin/edit/${p.id}')" title="${esc(p.title)} — ${fmtDT(p.publishAt)}">${p.issue?'#'+p.issue+' ':''}${esc(p.title)}</div>`}).join('')}</div>`}).join('')}</div>`}
+function calShift(n){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+n,1);renderAdmin('calendar')}
+async function dropOn(e,k){e.preventDefault();const p=S.posts.find(x=>x.id===e.dataTransfer.getData('text'));if(!p)return;
+  const o=new Date(p.publishAt),[y,mo,d]=k.split('-').map(Number),nd=new Date(y,mo-1,d,o.getHours(),o.getMinutes());
+  if(p.status==='scheduled'&&nd<=now()){toast('Pick a future date for scheduled issues');return renderAdmin('calendar')}
+  p.publishAt=nd.toISOString();try{await DB.save(p);await DB.log('↔',`Moved “${p.title}” to ${fmtDT(nd)}`);toast('Moved to '+fmtDT(nd))}catch(err){toast('⚠ '+err.message)}
+  await route(CLOUD)}
+
+/* ---- editor ---- */
+function viewEditor(id,dateArg){
+  if(id&&!draft){const p=S.posts.find(x=>x.id===id);if(!p)return '<p>Issue not found.</p>';draft=JSON.parse(JSON.stringify(p))}
+  if(!id&&!draft){
+    let when=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime);
+    while(S.posts.some(p=>p.status!=='draft'&&p.publishAt&&dayKey(p.publishAt)===dayKey(when)))when.setDate(when.getDate()+7);
+    if(dateArg){const[y,m,d]=dateArg.split('-').map(Number),[h,mi]=S.settings.weeklyTime.split(':').map(Number);when=new Date(y,m-1,d,h,mi);if(when<=now())when=new Date(Date.now()+3600e3)}
+    draft={id:null,issue:Math.max(0,...S.posts.map(p=>p.issue||0))+1,title:'',slug:'',excerpt:'',content:'',category:'Finance',tags:['FinanceInsights'],coverImg:'',series:true,status:'scheduled',publishAt:when.toISOString(),views:0};
+  }
+  const mode=draft.status;
+  const cats=[...new Set(['Finance','AI','Career Growth',...S.posts.map(p=>p.category)])];
+  return `<div class="topbar"><div><h1>${draft.id?`Edit issue ${draft.issue?'#'+draft.issue:''}`:'New issue'}</h1><p>${draft.id?`<span class="pill-s ${effStatus(draft)}">${STATUS_LABEL[effStatus(draft)]}</span>`:'Write it, then publish now or schedule it for issue day.'}</p></div>
+    <div style="display:flex;gap:10px"><button class="abtn" onclick="draft=null;history.back()">Cancel</button><button class="abtn li" onclick="linkedinModal(null)">${ICON.li} LinkedIn version</button></div></div>
+  <div class="editor"><div>
+    <div class="field"><input class="ainput title-in" id="f_title" placeholder="Issue title…" value="${esc(draft.title)}" oninput="sync()"></div>
+    <div class="field"><label>Hook / editorial angle</label><textarea class="ainput" id="f_excerpt" rows="2" oninput="sync()">${esc(draft.excerpt)}</textarea></div>
+    <div class="field"><label>Article (Markdown)</label>
+      <div class="mdbar"><button onclick="ins('## ','')">H2</button><button onclick="ins('### ','')">H3</button><span class="sep"></span>
+        <button onclick="ins('**','**')"><b>B</b></button><button onclick="ins('*','*')"><i>I</i></button><span class="sep"></span>
+        <button onclick="ins('- ','')">• List</button><button onclick="ins('1. ','')">1. List</button><button onclick="ins('> ','')">❝ Quote band</button>
+        <button onclick="ins('| Col 1 | Col 2 |\\n|---|---|\\n| ',' |  |')">▦ Table</button><button onclick="ins(':: ','')">ƒ Formula</button><button onclick="ins('[','](https://)')">🔗 Link</button></div>
+      <textarea class="ainput content" id="f_content" oninput="sync()" placeholder="Paste your _article.md here…">${esc(draft.content)}</textarea>
+      <div class="hint" id="rt">${readTime(draft.content)} min read · Arabic text is shown right-to-left automatically.</div></div>
+    <div class="field"><label>Live preview</label><div class="preview-wrap" id="preview"></div></div>
+  </div><div>
+    <div class="panel pubbox" style="margin-bottom:18px"><h3>Publishing</h3>
+      ${[['draft','Save as draft / planned','Keep private; a date marks it as planned'],['published','Publish now','Goes live on the blog immediately'],['scheduled','Schedule','Goes live automatically at the chosen time']].map(([k,t,s])=>`<label class="opt ${mode===k?'on':''}"><input type="radio" name="mode" ${mode===k?'checked':''} onchange="setMode('${k}')"><div><b>${t}</b><small>${s}</small></div></label>`).join('')}
+      ${mode!=='published'?`<div style="margin-top:10px"><label class="hint" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;color:#9fbab7">${mode==='draft'?'Planned date (optional)':'Publish at'}</label>
+        <input type="datetime-local" class="ainput" id="f_when" style="margin-top:6px" value="${draft.publishAt?toLocalInput(draft.publishAt):''}" onchange="sync()">
+        <button class="abtn sm" style="margin-top:8px" onclick="useSlot()">⬢ Next free issue day (${DAYS[S.settings.weeklyDay].slice(0,3)} ${S.settings.weeklyTime})</button></div>`:''}
+      <button class="abtn gold" id="saveBtn" style="width:100%;justify-content:center;margin-top:16px;padding:13px" onclick="savePost()">${mode==='published'?'🚀 Publish now':mode==='scheduled'?'🗓 Schedule issue':'💾 Save draft'}</button>
+      ${draft.id?`<button class="abtn danger" style="width:100%;justify-content:center;margin-top:8px" onclick="delPost('${draft.id}')">Delete issue</button>`:''}</div>
+    <div class="panel" style="margin-bottom:18px"><h3>Details</h3>
+      <div style="display:grid;grid-template-columns:90px 1fr;gap:10px"><div class="field"><label>Issue #</label><input class="ainput" id="f_issue" type="number" value="${draft.issue||''}" oninput="sync()"></div>
+      <div class="field"><label>Category</label><input class="ainput" id="f_cat" list="catlist" value="${esc(draft.category)}" oninput="sync()"><datalist id="catlist">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div></div>
+      <div class="field"><label>Hashtags (comma separated)</label><input class="ainput" id="f_tags" value="${esc((draft.tags||[]).join(', '))}" oninput="sync()"></div>
+      <div class="field"><label>URL slug</label><input class="ainput" id="f_slug" value="${esc(draft.slug)}" placeholder="auto from title" oninput="sync()"></div>
+      <div class="field"><label>Cover image URL (optional)</label><input class="ainput" id="f_img" value="${esc(draft.coverImg)}" placeholder="Leave empty for the branded cover" oninput="sync()">
+      <div class="hint">Tip: upload your _thumbnail.png to Supabase Storage (bucket “covers”) and paste its public URL here.</div></div>
+    </div></div></div>`}
+function sync(){
+  draft.title=$('#f_title').value;draft.excerpt=$('#f_excerpt').value;draft.content=$('#f_content').value;draft.category=$('#f_cat').value;
+  draft.issue=parseInt($('#f_issue').value)||null;draft.tags=$('#f_tags').value.split(',').map(t=>t.trim().replace(/^#/,'')).filter(Boolean);
+  draft.slug=$('#f_slug').value.trim();draft.coverImg=$('#f_img').value.trim();
+  const w=$('#f_when');if(w&&w.value)draft.publishAt=new Date(w.value).toISOString();
+  $('#rt').textContent=`${readTime(draft.content)} min read · Arabic text is shown right-to-left automatically.`;updatePreview()}
+function updatePreview(){const pv=$('#preview');if(!pv)return;
+  pv.innerHTML=`${coverHTML(draft)}<div class="meta" style="margin-top:14px">${draft.issue?`<b>ISSUE ${draft.issue}</b> · `:''}${esc(draft.category)} · ${readTime(draft.content)} min read</div>
+  <h1 dir="auto">${esc(draft.title||'Your title here')}</h1><p class="excerpt" dir="auto" style="font-size:17px;margin-top:10px">${esc(draft.excerpt)}</p><div class="prose" dir="auto">${md(draft.content)}</div>`}
+function ins(a,b){a=a.replace(/\\n/g,'\n');b=b.replace(/\\n/g,'\n');const t=$('#f_content'),s=t.selectionStart,e=t.selectionEnd,sel=t.value.slice(s,e);
+  const nl=!b.trim()&&s>0&&t.value[s-1]!=='\n'?'\n':'';t.value=t.value.slice(0,s)+nl+a+sel+b+t.value.slice(e);t.focus();const pos=s+nl.length+a.length+sel.length;t.setSelectionRange(pos,pos);sync()}
+function setMode(m){sync();draft.status=m;
+  if(m==='scheduled'&&(!draft.publishAt||new Date(draft.publishAt)<=now()))draft.publishAt=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime).toISOString();
+  renderAdmin('editor',draft.id)}
+function useSlot(){const d=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime);
+  while(S.posts.some(p=>p.id!==draft.id&&p.status!=='draft'&&p.publishAt&&dayKey(p.publishAt)===dayKey(d)))d.setDate(d.getDate()+7);
+  $('#f_when').value=toLocalInput(d);sync();toast('Set to '+fmtDT(d))}
+async function savePost(){
+  sync();if(!draft.title.trim())return toast('Please add a title');
+  const prev=draft.id&&S.posts.find(p=>p.id===draft.id);
+  if(draft.status==='published'&&!(prev&&isLive(prev)))draft.publishAt=new Date().toISOString();
+  if(draft.status==='scheduled'&&(!draft.publishAt||new Date(draft.publishAt)<=now()))return toast('Choose a future date & time to schedule');
+  draft.category=(draft.category||'').trim()||'Finance';
+  let slug=slugify(draft.slug||draft.title),n=2,base=slug;while(S.posts.some(p=>p.slug===slug&&p.id!==draft.id))slug=base+'-'+(n++);draft.slug=slug;
+  const isNew=!draft.id;if(isNew)draft.id=uuid();
+  const msg=draft.status==='published'?'Published':draft.status==='scheduled'?'Scheduled for '+fmtDT(draft.publishAt):'Draft saved';
+  $('#saveBtn').disabled=true;
+  try{await DB.save(draft);await DB.log(isNew?'✚':'✎',`${msg}: “${draft.title}”`);toast((draft.status==='published'?'🚀 ':draft.status==='scheduled'?'🗓 ':'💾 ')+msg);
+    const st=draft.status;draft=null;go(st==='scheduled'?'#/admin/calendar':'#/admin/posts');await route(CLOUD)}
+  catch(e){if(isNew)draft.id=null;$('#saveBtn').disabled=false;toast('⚠ '+e.message)}}
+async function act(fn,msg){try{await fn();toast(msg);await route(CLOUD)}catch(e){toast('⚠ '+e.message)}}
+const findP=id=>S.posts.find(p=>p.id===id);
+function publishNow(id){const p=findP(id);p.status='published';p.publishAt=new Date().toISOString();act(async()=>{await DB.save(p);await DB.log('🚀',`Published “${p.title}”`)},'🚀 Published')}
+function unpublish(id){const p=findP(id);p.status='draft';act(async()=>{await DB.save(p);await DB.log('↩',`Unpublished “${p.title}”`)},'Moved to drafts')}
+function duplicate(id){const p=JSON.parse(JSON.stringify(findP(id)));Object.assign(p,{id:uuid(),title:p.title+' (copy)',slug:p.slug+'-copy-'+Date.now().toString(36).slice(-4),status:'draft',publishAt:'',views:0,issue:null});
+  act(async()=>{await DB.save(p);await DB.log('⧉',`Duplicated “${p.title}”`)},'Duplicated as draft')}
+function delPost(id){const p=findP(id)||draft;if(!confirm(`Delete “${p.title}”? This cannot be undone.`))return;draft=null;
+  act(async()=>{await DB.remove(id);await DB.log('✕',`Deleted “${p.title}”`);go('#/admin/posts')},'Deleted')}
+
+/* ---- LinkedIn version ---- */
+function linkedinModal(id){
+  const p=id?findP(id):(sync(),draft);if(!p)return;
+  const heads=[];(p.content||'').split('\n').forEach(l=>{const m=l.match(/^##\s+(.*)/);if(m&&heads.length<7&&!/your turn|takeaway|introduction|hook/i.test(m[1]))heads.push(m[1].replace(/\*/g,''))});
+  const q=((p.content||'').match(/\*\*([^*]*\?)\*\*/g)||[]).pop();
+  const url=location.origin+location.pathname+'#/post/'+(p.slug||slugify(p.title));
+  const txt=`${p.title}\n\nFinance Insights${p.issue?' · Issue '+p.issue:''}\n\n${p.excerpt}\n\n${heads.length?"In this issue:\n"+heads.map(h=>'▸ '+h).join('\n')+'\n\n':''}${q?'💬 '+q.replace(/\*/g,'')+'\n\n':''}📖 Read the full issue: ${url}\n\n${(p.tags||[]).map(t=>'#'+t.replace(/\s+/g,'')).join(' ')}`;
+  openModal(`<h3>${ICON.li} LinkedIn version</h3><p class="sub">Generated from this issue. Edit, copy, then paste into LinkedIn.</p>
+  <textarea class="ainput" id="liText">${esc(txt)}</textarea><div class="hint" id="liCount">${txt.length} / 3,000 characters</div>
+  <div class="row"><button class="abtn" onclick="closeModal()">Close</button><a class="abtn li" href="https://www.linkedin.com/feed/" target="_blank" rel="noopener">${ICON.li} Open LinkedIn</a><button class="abtn gold" onclick="navigator.clipboard.writeText($('#liText').value);toast('Copied — paste into LinkedIn')">Copy text</button></div>`);
+  $('#liText').oninput=e=>$('#liCount').textContent=e.target.value.length+' / 3,000 characters'}
+
+/* ---- settings ---- */
+function viewSettings(){const s=S.settings;
+  return `<div class="topbar"><div><h1>Settings</h1><p>Blog identity, issue day${CLOUD?'':', PIN'} and backups.</p></div></div>
+  <div class="panels"><div class="panel"><h3>Blog identity</h3>
+    ${[['s_name','Blog name',s.blogName],['s_tag','Tagline',s.tagline],['s_author','Author',s.author],['s_role','Author headline',s.role],['s_li','LinkedIn newsletter / profile URL',s.linkedin]].map(([i,l,v])=>`<div class="field"><label>${l}</label><input class="ainput" id="${i}" value="${esc(v)}"></div>`).join('')}</div>
+  <div><div class="panel" style="margin-bottom:20px"><h3>Weekly issue day</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="field"><label>Day</label><select class="ainput" id="s_day">${DAYS.map((d,i)=>`<option value="${i}" ${i==s.weeklyDay?'selected':''}>${d}</option>`).join('')}</select></div>
+    <div class="field"><label>Time</label><input type="time" class="ainput" id="s_time" value="${s.weeklyTime}"></div></div>
+    <label class="check"><input type="checkbox" id="s_up" ${s.showUpcoming?'checked':''}> Show “Coming up” (scheduled issues) on the blog</label></div>
+    ${CLOUD?`<div class="panel" style="margin-bottom:20px"><h3>Account</h3><p class="hint">Signed in as ${esc(AUTH.user?.email)}. Manage admin users in Supabase → Authentication.</p></div>`:
+    `<div class="panel" style="margin-bottom:20px"><h3>Local PIN</h3><div class="field"><input class="ainput" id="s_pin" value="${esc(s.pin)}" maxlength="8"></div></div>`}
+    <div class="panel"><h3>Backup</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="abtn" onclick="exportData()">⬇ Export JSON</button>
+      ${!CLOUD?`<label class="abtn" style="cursor:pointer">⬆ Import JSON<input type="file" accept=".json" hidden onchange="importData(this)"></label><button class="abtn danger" onclick="if(confirm('Reset to the Finance Insights issues?')){localStorage.removeItem('${LS_KEY}');location.reload()}">↺ Reset</button>`:''}</div></div></div></div>
+  <button class="abtn gold" style="padding:13px 26px" onclick="saveSettings()">Save settings</button>`}
+async function saveSettings(){const s={...S.settings,blogName:$('#s_name').value||'Finance Insights',tagline:$('#s_tag').value,author:$('#s_author').value||'Author',role:$('#s_role').value,linkedin:$('#s_li').value,weeklyDay:+$('#s_day').value,weeklyTime:$('#s_time').value||'08:00',showUpcoming:$('#s_up').checked};
+  if($('#s_pin'))s.pin=$('#s_pin').value||'1234';
+  act(async()=>{await DB.saveSettings(s);await DB.log('⚙','Settings updated')},'Settings saved')}
+function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({settings:S.settings,posts:S.posts},null,2)],{type:'application/json'}));a.download=`finance-insights-backup-${dayKey(now())}.json`;a.click()}
+function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.posts)throw 0;S.posts=d.posts;S.settings={...DEFAULT_SETTINGS,...d.settings};localSave();toast('Imported');route()}catch(e){toast('Invalid backup file')}};r.readAsText(f)}
+
+/* ---------- modal / toast ---------- */
+function openModal(h){$('#modal').innerHTML=h;$('#modalBg').classList.add('show')}
+function closeModal(){$('#modalBg').classList.remove('show')}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2800)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ---------- start ---------- */
+(async()=>{
+  document.getElementById('loadMark').outerHTML=markSVG('lm');
+  if(CFG.supabaseUrl&&!window.supabase)console.warn('Supabase library failed to load — running in local mode.');
+  try{await DB.init();await DB.load();if(AUTH.isAdmin)await DB.publishDue()}catch(e){console.error(e);toast('⚠ '+(e.message||'Startup error'))}
+  route();
+})();
+</script>
+</body>
+</html>
