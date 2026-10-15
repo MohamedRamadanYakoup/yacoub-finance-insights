@@ -463,11 +463,14 @@ async function route(reload){
   if(a==='post')return renderPost(decodeURIComponent(b||''));
   renderHome();
 }
-setInterval(()=>{ // keep countdowns and auto-publish fresh
+setInterval(()=>{ // refresh the dashboard only, never public pages while someone is reading
   const busy=document.activeElement&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
   if(busy||$('#modalBg').classList.contains('show'))return;
-  if(document.body.className==='admin'&&AUTH.isAdmin)DB.publishDue().then(n=>{if(n)toast(`⚡ ${n} scheduled issue${n>1?'s':''} went live`);route()});
-  else route();
+  if(document.body.className!=='admin'||!AUTH.isAdmin)return;
+  const view=location.hash.replace(/^#\/?/,'').split('/')[1]||'';
+  if(view==='new'||view==='edit')return;
+  const y=scrollY;
+  DB.publishDue().then(n=>{if(n)toast(`⚡ ${n} scheduled issue${n>1?'s':''} went live`);route();scrollTo(0,y)});
 },60000);
 
 /* =====================================================================
