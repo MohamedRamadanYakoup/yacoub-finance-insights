@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Publishing Studio — Finance Insights</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/common.js"></script>
+<style>
+body{background:var(--teal-900);color:#e3eeec}
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--teal-800),var(--teal-900));border-right:1px solid rgba(201,168,106,.18);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.snav{margin-top:26px;display:flex;flex-direction:column;gap:3px}
+.snav a{display:flex;gap:12px;align-items:center;padding:10px 13px;border-radius:12px;font-size:14px;font-weight:500;color:#9fbab7;text-decoration:none;cursor:pointer}
+.snav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.snav a.on{background:linear-gradient(90deg,rgba(201,168,106,.2),rgba(201,168,106,.02));color:var(--gold-l);box-shadow:inset 3px 0 0 var(--gold)}
+.snav .count{margin-left:auto;background:rgba(255,255,255,.08);font-size:11px;padding:2px 8px;border-radius:999px}
+.snav .new{background:var(--gold);color:var(--teal-900)!important;font-weight:800;margin:4px 0 10px}
+.snav .new:hover{background:var(--gold-l)}
+.snav .sep{height:1px;background:rgba(255,255,255,.07);margin:10px 4px}
+.sidebar .bottom{margin-top:auto;font-size:12px;color:#7d9997;padding:6px;line-height:1.5;overflow-wrap:anywhere}
+.chipst{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 12px;border-radius:10px;margin-bottom:8px;word-break:normal}
+.chipst i{width:8px;height:8px;border-radius:50%;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.chipst.cloud{background:rgba(45,155,157,.15);color:#8fe0d0}.chipst.cloud i{background:#2d9b9d}
+.chipst.local{background:rgba(201,168,106,.14);color:var(--gold-l)}.chipst.local i{background:var(--gold)}
+.main{padding:26px 34px 60px;min-width:0}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.topbar h1{font-size:27px;font-weight:900;letter-spacing:-.5px}
+.topbar p{color:#8eaaa7;font-size:14px;margin-top:5px}
+.abtn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;background:rgba(255,255,255,.06);color:#e3eeec;border:1px solid rgba(255,255,255,.09);white-space:nowrap;text-decoration:none}
+.abtn:hover{background:rgba(255,255,255,.11)}
+.abtn.gold{background:var(--gold);color:var(--teal-900);border-color:var(--gold)}.abtn.gold:hover{background:var(--gold-l)}
+.abtn.teal{background:var(--teal-500);border-color:var(--teal-500);color:#fff}
+.abtn.li{background:#0a66c2;border-color:#0a66c2;color:#fff}
+.abtn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+.abtn.danger:hover{background:rgba(232,93,117,.2);color:#ffb0bf}
+.abtn:disabled{opacity:.5;cursor:wait}
+.alert{border-radius:14px;padding:15px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;line-height:1.5}
+.alert.gold{background:linear-gradient(90deg,rgba(201,168,106,.2),rgba(201,168,106,.05));border:1px solid rgba(201,168,106,.45)}
+.alert.warn{background:linear-gradient(90deg,rgba(232,93,117,.2),rgba(232,93,117,.05));border:1px solid rgba(232,93,117,.45)}
+.alert.ok{background:linear-gradient(90deg,rgba(27,125,105,.25),rgba(27,125,105,.05));border:1px solid rgba(45,155,157,.45)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:20px}
+.kpi{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;right:-24px;top:-24px;width:84px;height:84px;background:var(--c);opacity:.13;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.kpi span{font-size:11px;color:#8eaaa7;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+.kpi b{display:block;font-size:30px;font-weight:900;margin-top:6px;color:#fff}
+.kpi small{font-size:12px;color:var(--c)}
+.panels{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:20px}
+.panel{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:20px}
+.panel h3{font-size:15px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel h3 small{font-weight:500;color:#8eaaa7;font-size:12px}
+.chart{display:flex;align-items:flex-end;gap:9px;height:170px;border-bottom:1px solid rgba(255,255,255,.08)}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.bar{width:100%;max-width:32px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,var(--gold-l),var(--gold));min-height:4px}
+.bar.sch{background:linear-gradient(180deg,#5cc5b5,var(--teal-500))}
+.bar.pl{background:repeating-linear-gradient(45deg,rgba(232,226,208,.35) 0 4px,rgba(232,226,208,.12) 4px 8px)}
+.bar.zero{background:rgba(255,255,255,.08)}
+.bar-col.now::before{content:'NOW';position:absolute;top:-4px;font-size:9px;letter-spacing:1px;color:var(--gold)}
+.xl{display:flex;gap:9px;margin-top:8px}.xl span{flex:1;text-align:center;font-size:10px;color:#6f8b89}
+.legend{display:flex;gap:16px;font-size:12px;color:#9fbab7;margin-top:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.row-item{display:flex;gap:14px;align-items:center;padding:10px;border-radius:12px;background:rgba(255,255,255,.03);margin-bottom:8px;text-decoration:none;color:inherit;border:1px solid transparent}
+.row-item:hover{border-color:rgba(201,168,106,.45)}
+.row-item p{font-size:14px;font-weight:700;line-height:1.3}
+.row-item small{font-size:12px;color:#8eaaa7}
+.sw{width:42px;height:42px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;font-weight:900;font-size:12px;color:var(--teal-900)}
+.cd{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:#8fe0d0;background:rgba(27,125,105,.2);padding:5px 9px;border-radius:8px;white-space:nowrap}
+.cd.pl{color:var(--cream);background:rgba(232,226,208,.1)}
+.mix-row{margin-bottom:13px}
+.mix-row div:first-child{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:#cfe0de;gap:10px}
+.mix-row div:first-child span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:8px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.track i{display:block;height:100%;border-radius:999px}
+.log{max-height:270px;overflow:auto}
+.log div{display:flex;gap:10px;font-size:13px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);color:#cfe0de}
+.log time{color:#6f8b89;font-size:11px;min-width:96px;font-family:var(--mono)}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.st::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.live{background:rgba(201,168,106,.16);color:var(--gold-l)}
+.st.scheduled{background:rgba(27,125,105,.22);color:#8fe0d0}
+.st.draft{background:rgba(255,255,255,.08);color:#9fbab7}
+.st.planned{background:rgba(232,226,208,.1);color:var(--cream)}
+table.posts{width:100%;border-collapse:collapse;font-size:14px}
+table.posts th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6f8b89;font-weight:700;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+table.posts td{padding:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+table.posts tr:hover td{background:rgba(255,255,255,.02)}
+.tt{display:flex;gap:12px;align-items:center}
+.tt b{font-weight:700;display:block;max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt small{color:#8eaaa7;font-size:12px}
+.actions{display:flex;gap:6px;justify-content:flex-end}
+.filterbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:4px}
+.seg button{padding:7px 13px;border-radius:9px;font-size:13px;font-weight:600;color:#9fbab7}
+.seg button.on{background:rgba(201,168,106,.2);color:var(--gold-l)}
+.ainput{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);color:#e3eeec;border-radius:11px;padding:10px 13px;outline:none;width:100%}
+.ainput:focus{border-color:var(--gold)}
+select.ainput option{background:var(--teal-850)}
+.field{margin-bottom:14px}
+.field label,.lbl{display:block;font-size:11px;font-weight:700;color:#9fbab7;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+.hint{font-size:12px;color:#6f8b89;margin-top:6px;line-height:1.5}
+.check{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer;color:#cfe0de}
+.check input{accent-color:var(--gold);width:16px;height:16px}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.cal-head h2{font-size:22px;font-weight:900;min-width:210px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .dow{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6f8b89;padding:6px;text-align:center;font-weight:700}
+.day{min-width:0;min-height:104px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;cursor:pointer;position:relative}
+.day:hover{border-color:rgba(255,255,255,.2)}
+.day.out{opacity:.35}.day.today{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.day.slot{background:rgba(201,168,106,.06)}
+.day.slot::after{content:'⬢ issue day';position:absolute;bottom:6px;right:8px;font-size:9px;letter-spacing:.6px;color:rgba(201,168,106,.55);text-transform:uppercase}
+.day.over{background:rgba(27,125,105,.2);border-color:var(--teal-500)}
+.day .n{font-size:12px;font-weight:700;color:#9fbab7}.day.today .n{color:var(--gold)}
+.ev{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.25;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;display:block}
+.ev.live{background:rgba(201,168,106,.2);color:var(--gold-l)}
+.ev.scheduled{background:rgba(27,125,105,.3);color:#a6ecdf;cursor:grab}
+.ev.draft,.ev.planned{border:1px dashed rgba(232,226,208,.35);color:var(--cream);cursor:grab}
+
+/* plan */
+.plan-row{display:grid;grid-template-columns:52px minmax(0,1fr) 190px 150px auto;gap:16px;align-items:center;padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:10px}
+.plan-row b{display:block;font-size:15px;line-height:1.3}
+.plan-row small{color:#8eaaa7;font-size:12px}
+.wbar{font-size:12px;color:#9fbab7}
+.wbar .track{margin-top:6px}
+.plan-row.soon{border-color:rgba(232,93,117,.5)}
+
+/* editor */
+.ed-top{position:sticky;top:0;z-index:20;background:rgba(6,38,40,.92);backdrop-filter:blur(10px);margin:-26px -34px 18px;padding:14px 34px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ed-top h1{font-size:18px;font-weight:900;display:flex;gap:10px;align-items:center}
+.ed-top .as{font-size:12px;color:#6f8b89;font-family:var(--mono)}
+.ed-top .grow{flex:1}
+.ed-top input[type=datetime-local]{width:auto;padding:8px 10px}
+.title-in{font-family:var(--serif);font-size:30px;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.12);border-radius:0;padding:6px 0 12px;font-weight:700}
+.meta-grid{display:grid;grid-template-columns:90px 170px minmax(0,1fr) minmax(0,1fr);gap:12px}
+.cover-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cover-row .thumb{width:150px;height:84px;border-radius:10px;flex-shrink:0}
+.cover-row .thumb .ttl{display:none}.cover-row .thumb .cpill{font-size:8px;padding:4px 7px;left:8px;top:8px}.cover-row .thumb .iss{font-size:9px;left:8px;bottom:6px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:6px}
+.mdbar{display:flex;gap:3px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-bottom:none;border-radius:11px 11px 0 0;padding:6px;flex-wrap:wrap;align-items:center}
+.mdbar button{padding:6px 9px;border-radius:7px;font-size:12.5px;color:#9fbab7;font-weight:700}
+.mdbar button:hover{background:rgba(255,255,255,.08);color:#fff}
+.mdbar .sp{flex:1}
+.mdbar .sep{width:1px;height:18px;background:rgba(255,255,255,.1);margin:0 3px}
+textarea.content{height:calc(100vh - 170px);min-height:460px;border-radius:0 0 11px 11px;font-family:var(--mono);font-size:13px;line-height:1.75;resize:vertical}
+textarea.content.drag{border-color:var(--gold);background:rgba(201,168,106,.08)}
+.pv-wrap{position:sticky;top:84px}
+.pv-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:#9fbab7;text-transform:uppercase;letter-spacing:1px;padding:9px 4px}
+.preview{background:var(--cream-l);color:var(--ink);border-radius:14px;padding:22px 26px;height:calc(100vh - 170px);min-height:460px;overflow:auto}
+.preview .cover{height:170px;border-radius:12px}.preview .cover .ttl{font-size:17px}
+.preview h1{font-family:var(--serif);font-size:28px;line-height:1.15;margin-top:12px}
+.preview .ex{font-family:var(--serif);font-size:17px;color:var(--teal-600);border-left:3px solid var(--gold);padding-left:14px;margin-top:10px}
+.preview .prose{font-size:16px;margin-top:12px}
+.preview .mt{font-size:12px;color:#5d7273;margin-top:12px;font-weight:600}
+
+/* login & modal */
+.lock{min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,var(--teal-600),var(--teal-900) 65%);padding:20px}
+.lock .box{width:min(390px,100%);background:rgba(6,38,40,.85);border:1px solid rgba(201,168,106,.3);border-radius:22px;padding:34px;text-align:center;backdrop-filter:blur(10px)}
+.lock .mark{width:80px;height:80px;margin:0 auto 14px;display:block}
+.lock h2{font-size:24px;font-weight:900;margin-bottom:6px}
+.lock p{color:#8eaaa7;font-size:14px;margin-bottom:20px;line-height:1.5}
+.lock .ainput{margin-bottom:10px}
+.lock .link{font-size:13px;color:var(--gold-l);margin-top:12px;display:inline-block;text-decoration:underline;cursor:pointer}
+.modal-bg{position:fixed;inset:0;background:rgba(3,18,19,.75);backdrop-filter:blur(6px);display:none;place-items:center;z-index:100;padding:20px}
+.modal-bg.show{display:grid}
+.modal{background:var(--teal-850);color:#e3eeec;border:1px solid rgba(201,168,106,.3);border-radius:20px;padding:26px;width:min(620px,100%);max-height:90vh;overflow:auto}
+.modal h3{font-size:20px;font-weight:900;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.modal p.sub{color:#8eaaa7;font-size:13px;margin-bottom:16px}
+.modal textarea{min-height:320px;line-height:1.6}
+.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.loading{min-height:100vh;display:grid;place-items:center}
+.loading .mark{width:90px;height:90px;animation:spin 2.4s ease-in-out infinite}
+@keyframes spin{50%{transform:rotate(180deg) scale(.9)}}
+@media(max-width:1250px){.kpis{grid-template-columns:repeat(3,1fr)}.panels{grid-template-columns:1fr}.plan-row{grid-template-columns:52px minmax(0,1fr) auto}.plan-row .wbar,.plan-row .when{display:none}}
+@media(max-width:1000px){.split{grid-template-columns:1fr}.pv-wrap{position:static}.preview,textarea.content{height:60vh}.meta-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:860px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}.snav{flex-direction:row;flex-wrap:wrap}.snav .sep{display:none}.sidebar .bottom{display:none}.main{padding:18px}.ed-top{margin:-18px -18px 16px;padding:12px 18px}.kpis{grid-template-columns:repeat(2,1fr)}.day{min-height:74px}}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading" id="loadMark"></div></div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="mdFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
+<input type="file" id="imgFile" accept="image/*" hidden>
+
+<script>
+const LI='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>';
+const TARGET_WORDS=1200;
+let admFilter='all', admQuery='', calMonth=new Date(now().getFullYear(),now().getMonth(),1), draft=null, dirty=false, asTimer=null;
+const go=h=>{location.hash=h};
+const findP=id=>S.posts.find(p=>p.id===id);
+const swHTML=p=>`<div class="sw" style="background:${catColor(p.category)}">${p.issue?('#'+p.issue):'—'}</div>`;
+const scheduled=()=>S.posts.filter(p=>p.status==='scheduled'&&!isLive(p)).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt));
+const drafts=()=>S.posts.filter(p=>p.status==='draft').sort((a,b)=>(a.publishAt?new Date(a.publishAt):Infinity)-(b.publishAt?new Date(b.publishAt):Infinity));
+const viewName=()=>location.hash.replace(/^#\/?/,'').split('/')[0]||'dashboard';
+
+/* ---------- router ---------- */
+window.addEventListener('hashchange',()=>route());
+async function route(reload){
+  if(reload){try{await DB.load(true)}catch(e){toast('⚠ '+(e.message||'Could not load data'))}}
+  if(!AUTH.isAdmin) return renderLock();
+  const [a,b]=location.hash.replace(/^#\/?/,'').split('/');
+  if(a!=='edit'&&a!=='new') draft=null;
+  const views={posts:viewPosts,calendar:viewCalendar,plan:viewPlan,settings:viewSettings};
+  if(a==='new'||a==='edit') return renderEditor(a==='edit'?b:null, a==='new'?b:null);
+  render(views[a]?a:'dashboard', (views[a]||viewDashboard)());
+}
+function render(active, inner){
+  const n={sch:scheduled().length, plan:drafts().length};
+  const item=(k,h,ic,l,x='')=>`<a class="${active===k?'on':''}" href="${h}"><span>${ic}</span>${l}${x}</a>`;
+  $('#app').innerHTML=`<div class="shell"><aside class="sidebar">${brandHTML('Publishing Studio','#/')}
+    <nav class="snav"><a class="new" href="#/new"><span>＋</span>New issue</a>
+      ${item('dashboard','#/','◈','Dashboard')}
+      ${item('plan','#/plan','✎','Writing plan',`<span class="count">${n.plan}</span>`)}
+      ${item('posts','#/posts','☰','All issues',`<span class="count">${S.posts.length}</span>`)}
+      ${item('calendar','#/calendar','▦','Calendar',`<span class="count">${n.sch}</span>`)}
+      ${item('settings','#/settings','⚙','Settings')}
+      <span class="sep"></span>
+      <a href="/" target="_blank" rel="noopener"><span>↗</span>View blog</a><a onclick="signOut()"><span>↪</span>Sign out</a></nav>
+    <div class="bottom">${CLOUD?`<div class="chipst cloud"><i></i>Supabase · online</div>${esc(AUTH.user?.email||'')}`:`<div class="chipst local"><i></i>Local mode · this browser</div>Add Supabase keys to config.js to publish online.`}</div>
+  </aside><main class="main" id="main">${inner}</main></div>`;
+  if(active==='posts') renderRows();
+}
+
+/* ---------- login ---------- */
+function renderLock(){
+  const notAdmin=CLOUD&&AUTH.user&&!AUTH.isAdmin;
+  $('#app').innerHTML=`<div class="lock"><div class="box">${markSVG()}<h2>Publishing Studio</h2>
+  ${notAdmin?`<p>Signed in as <b>${esc(AUTH.user.email)}</b>, but this account is not an admin yet. Add it to the <code>admins</code> table in Supabase, then reload.</p><button class="abtn" style="width:100%;justify-content:center" onclick="signOut()">Sign out</button>`:
+   CLOUD?`<p>Sign in to write, schedule and publish Finance Insights.</p>
+   <input id="em" class="ainput" type="email" placeholder="Email" autocomplete="username">
+   <input id="pw" class="ainput" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+   <button class="abtn gold" id="signBtn" style="width:100%;justify-content:center" onclick="signIn()">Sign in</button>
+   <a class="link" onclick="forgot()">Forgot password?</a>`
+   :`<p>Local mode — enter your PIN.<br><small>Default 1234 · add Supabase keys to config.js to publish online.</small></p>
+   <input id="pin" class="ainput" type="password" maxlength="8" placeholder="PIN" style="text-align:center;letter-spacing:10px;font-size:20px" onkeydown="if(event.key==='Enter')unlock()">
+   <button class="abtn gold" style="width:100%;justify-content:center" onclick="unlock()">Unlock</button>`}
+  <a class="abtn" style="width:100%;justify-content:center;margin-top:8px" href="/">← Back to blog</a></div></div>`;
+  setTimeout(()=>($('#em')||$('#pin'))?.focus(),50);
+}
+async function signIn(){const b=$('#signBtn');b.disabled=true;
+  const {data,error}=await sb.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
+  if(error){b.disabled=false;return toast('⚠ '+error.message)}
+  await setUser(data.user);await route(true);if(AUTH.isAdmin)DB.publishDue()}
+async function forgot(){const em=$('#em').value.trim();if(!em)return toast('Type your email first');
+  const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+'/admin/'});toast(error?'⚠ '+error.message:'Password reset email sent')}
+function unlock(){if($('#pin').value===S.settings.pin){sessionStorage.setItem('fi_auth','1');AUTH.isAdmin=true;route()}else{toast('Incorrect PIN');$('#pin').value=''}}
+async function signOut(){if(CLOUD)await sb.auth.signOut();AUTH.isAdmin=false;AUTH.user=null;sessionStorage.removeItem('fi_auth');location.hash='#/';renderLock()}
+function newPasswordModal(){openModal(`<h3>Set a new password</h3><p class="sub">Choose a new password for ${esc(AUTH.user?.email||'your account')}.</p>
+  <input id="np" class="ainput" type="password" placeholder="New password (min. 8 characters)" autocomplete="new-password">
+  <div class="row"><button class="abtn gold" onclick="saveNewPassword()">Save password</button></div>`)}
+async function saveNewPassword(){const p=$('#np').value;if(p.length<8)return toast('Use at least 8 characters');
+  const {error}=await sb.auth.updateUser({password:p});if(error)return toast('⚠ '+error.message);closeModal();toast('Password updated');history.replaceState(null,'','/admin/#/');route(true)}
+
+/* ---------- dashboard ---------- */
+function streak(){const ws=new Set(S.posts.filter(isLive).map(p=>weekStart(p.publishAt).getTime()));let w=weekStart(now());if(!ws.has(w.getTime()))w.setDate(w.getDate()-7);let n=0;while(ws.has(w.getTime())){n++;w.setDate(w.getDate()-7)}return n}
+function issueDayAlert(){
+  const slot=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime), days=(slot-now())/864e5;
+  const onDay=S.posts.filter(p=>p.publishAt&&dayKey(p.publishAt)===dayKey(slot));
+  const sch=onDay.find(p=>p.status==='scheduled'), pl=onDay.find(p=>p.status==='draft');
+  if(sch) return `<div class="alert ok"><div>✓ Next issue day <b>${fmtDT(slot)}</b> is covered — <b>${sch.issue?'#'+sch.issue+' ':''}${esc(sch.title)}</b> goes live ${countdown(sch.publishAt)}.</div><a class="abtn sm" href="#/edit/${sch.id}">Open</a></div>`;
+  if(pl){const w=words(pl.content);return `<div class="alert ${days<3?'warn':'gold'}"><div>${days<3?'⚠':'✎'} <b>${pl.issue?'#'+pl.issue+' ':''}${esc(pl.title)}</b> is planned for <b>${fmtDT(slot)}</b> (${countdown(slot)}) but not scheduled yet — ${w.toLocaleString()} of ~${TARGET_WORDS.toLocaleString()} words written.</div><a class="abtn gold sm" href="#/edit/${pl.id}">Write now</a></div>`}
+  return `<div class="alert ${days<3?'warn':'gold'}"><div>${days<3?'⚠':'⬢'} Nothing planned for the next issue day, <b>${fmtDT(slot)}</b> (${countdown(slot)}).</div><a class="abtn gold sm" href="#/new/${dayKey(slot)}">Plan an issue</a></div>`;
+}
+function viewDashboard(){
+  const P=S.posts, L=P.filter(isLive), sch=scheduled(), dr=drafts(), reads=L.reduce((s,p)=>s+(p.views||0),0);
+  const ws=weekStart(now()), cols=[];
+  for(let k=-8;k<=4;k++){const s=new Date(ws);s.setDate(s.getDate()+7*k);const e=new Date(s);e.setDate(e.getDate()+7);
+    const inW=P.filter(p=>p.publishAt&&new Date(p.publishAt)>=s&&new Date(p.publishAt)<e);
+    cols.push({s,k,l:inW.filter(isLive).length,sc:inW.filter(p=>p.status==='scheduled'&&!isLive(p)).length,pl:inW.filter(p=>p.status==='draft').length})}
+  const max=Math.max(2,...cols.map(c=>c.l+c.sc+c.pl));
+  const top=[...L].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5), topMax=Math.max(1,...top.map(p=>p.views||0));
+  const cm={};P.forEach(p=>cm[p.category]=(cm[p.category]||0)+1);
+  const queue=[...sch.map(p=>({p,t:'sch'})),...dr.filter(p=>p.publishAt&&new Date(p.publishAt)>now()).map(p=>({p,t:'pl'}))].slice(0,5);
+  const h=now().getHours();
+  return `${CLOUD&&!P.length?`<div class="alert gold"><div><b>Your Supabase database is empty.</b> Import the Finance Insights issues in one click.</div><button class="abtn gold" id="impBtn" onclick="importSeed()">⬆ Import issues</button></div>`:''}
+  <div class="topbar"><div><h1>Good ${h<12?'morning':h<18?'afternoon':'evening'}, ${esc(S.settings.author.split(' ')[0])}</h1><p>Here is where Finance Insights stands today.</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="abtn" href="#/plan">✎ Writing plan</a><a class="abtn gold" href="#/new">＋ New issue</a></div></div>
+  ${issueDayAlert()}
+  <div class="kpis">
+    <div class="kpi" style="--c:var(--gold)"><span>Published</span><b>${L.length}</b><small>latest #${Math.max(0,...L.map(p=>p.issue||0))}</small></div>
+    <div class="kpi" style="--c:#5cc5b5"><span>Scheduled</span><b>${sch.length}</b><small>${sch[0]?'next '+countdown(sch[0].publishAt):'nothing queued'}</small></div>
+    <div class="kpi" style="--c:var(--cream)"><span>To write</span><b>${dr.length}</b><small>${dr.filter(p=>p.publishAt).length} with a date</small></div>
+    <div class="kpi" style="--c:var(--teal-200)"><span>Reads</span><b>${reads.toLocaleString()}</b><small>${CLOUD?'all visitors':'this browser'}</small></div>
+    <div class="kpi" style="--c:#e8a08f"><span>Weekly streak</span><b>${streak()}</b><small>weeks in a row</small></div></div>
+  <div class="panels"><div class="panel"><h3>Publishing cadence <small>8 weeks back · 4 ahead</small></h3>
+    <div class="chart">${cols.map(c=>`<div class="bar-col ${c.k===0?'now':''}" title="Week of ${fmtD(c.s)}: ${c.l} live, ${c.sc} scheduled, ${c.pl} planned">
+      ${c.pl?`<div class="bar pl" style="height:${c.pl/max*100}%"></div>`:''}${c.sc?`<div class="bar sch" style="height:${c.sc/max*100}%"></div>`:''}${c.l?`<div class="bar" style="height:${c.l/max*100}%"></div>`:''}${!(c.l+c.sc+c.pl)?'<div class="bar zero"></div>':''}</div>`).join('')}</div>
+    <div class="xl">${cols.map(c=>`<span>${c.s.getDate()}/${c.s.getMonth()+1}</span>`).join('')}</div>
+    <div class="legend"><span><i style="background:var(--gold)"></i>Published</span><span><i style="background:var(--teal-500)"></i>Scheduled</span><span><i style="background:rgba(232,226,208,.35)"></i>Planned</span></div></div>
+   <div class="panel"><h3>Up next <small>${sch.length} scheduled</small></h3>
+    ${queue.length?queue.map(({p,t})=>`<a class="row-item" href="#/edit/${p.id}">${swHTML(p)}<div><p>${esc(p.title)}</p><small>${fmtDT(p.publishAt)}</small></div><span class="cd ${t==='pl'?'pl':''}">${t==='pl'?words(p.content)+' words':countdown(p.publishAt)}</span></a>`).join(''):'<p class="hint">Nothing queued.</p>'}</div></div>
+  <div class="panels"><div class="panel"><h3>Most-read issues <small>${CLOUD?'all visitors':'this browser'}</small></h3>
+    ${top.some(p=>p.views)?top.map(p=>`<div class="mix-row"><div><span>${p.issue?'#'+p.issue+' ':''}${esc(p.title)}</span><span>${(p.views||0).toLocaleString()}</span></div><div class="track"><i style="width:${(p.views||0)/topMax*100}%;background:${catColor(p.category)}"></i></div></div>`).join(''):'<p class="hint">Reads appear here as visitors open your issues. Your own visits are not counted.</p>'}</div>
+   <div class="panel"><h3>Topic mix <small>all issues</small></h3>${Object.entries(cm).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="mix-row"><div><span>${esc(c)}</span><span>${n}</span></div><div class="track"><i style="width:${n/P.length*100}%;background:${catColor(c)}"></i></div></div>`).join('')||'<p class="hint">No issues yet.</p>'}</div></div>
+  <div class="panel"><h3>Recent activity</h3><div class="log">${S.log.slice(0,14).map(l=>`<div><time>${new Date(l.t).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time><span>${esc(l.i)}</span><span>${esc(l.m)}</span></div>`).join('')||'<p class="hint">No activity yet.</p>'}</div></div>`}
+async function importSeed(){const b=$('#impBtn');b.disabled=true;
+  try{await loadScript('/seed-posts.js');const arr=seedPosts();if(!arr.length)throw new Error('seed-posts.js was not found in your repository');
+    await DB.saveMany(arr);await DB.log('⬆',`Imported ${arr.length} issues`);toast('Imported ✓');await route(true)}catch(e){b.disabled=false;toast('⚠ '+e.message)}}
+
+/* ---------- writing plan ---------- */
+function viewPlan(){
+  const sch=scheduled(), dr=drafts();
+  const row=(p,kind)=>{const w=words(p.content), pct=Math.min(100,w/TARGET_WORDS*100), soon=p.publishAt&&(new Date(p.publishAt)-now())<3*864e5&&kind==='draft';
+    const stage=kind==='sch'?'Scheduled':w<300?'Outline':w<900?'In progress':'Ready to schedule';
+    return `<div class="plan-row ${soon?'soon':''}">${swHTML(p)}<div><b>${esc(p.title||'Untitled')}</b><small>${esc(p.category)} · <span class="st ${kind==='sch'?'scheduled':'planned'}" style="padding:2px 8px">${stage}</span></small></div>
+      <div class="when"><b style="font-size:13px">${p.publishAt?fmtDT(p.publishAt):'No date yet'}</b><small>${p.publishAt?countdown(p.publishAt):''}</small></div>
+      <div class="wbar">${w.toLocaleString()} / ${TARGET_WORDS.toLocaleString()} words<div class="track"><i style="width:${pct}%;background:${pct>=75?'var(--teal-400)':'var(--gold)'}"></i></div></div>
+      <div class="actions"><a class="abtn sm ${kind==='sch'?'':'gold'}" href="#/edit/${p.id}">${kind==='sch'?'Open':'Write'}</a></div></div>`};
+  return `<div class="topbar"><div><h1>Writing plan</h1><p>Issues still to write, in publishing order. Aim for about ${TARGET_WORDS.toLocaleString()} words per issue.</p></div><a class="abtn gold" href="#/new">＋ New issue</a></div>
+  ${issueDayAlert()}
+  ${sch.length?`<div class="lbl" style="margin:6px 0 10px">Scheduled — ready to go live</div>${sch.map(p=>row(p,'sch')).join('')}`:''}
+  <div class="lbl" style="margin:22px 0 10px">To write (${dr.length})</div>${dr.length?dr.map(p=>row(p,'draft')).join(''):'<p class="hint">No drafts — everything is written. 🎉</p>'}`}
+
+/* ---------- all issues ---------- */
+function viewPosts(){return `<div class="topbar"><div><h1>All issues</h1><p>Published, scheduled, planned and draft issues.</p></div><a class="abtn gold" href="#/new">＋ New issue</a></div>
+  <div class="filterbar"><div class="seg">${[['all','All'],['live','Published'],['scheduled','Scheduled'],['planned','Planned'],['draft','Drafts']].map(([k,l])=>`<button class="${admFilter===k?'on':''}" onclick="admFilter='${k}';route()">${l}</button>`).join('')}</div>
+  <input class="ainput" style="max-width:280px;margin-left:auto" placeholder="Search…" value="${esc(admQuery)}" oninput="admQuery=this.value;renderRows()"></div>
+  <div class="panel" style="padding:6px 10px;overflow-x:auto"><table class="posts"><thead><tr><th>Issue</th><th>Status</th><th>Date</th><th>Reads</th><th style="text-align:right">Actions</th></tr></thead><tbody id="rows"></tbody></table></div>`}
+function renderRows(){const q=admQuery.toLowerCase();
+  const rows=S.posts.filter(p=>(admFilter==='all'||effStatus(p)===admFilter)&&(!q||(p.title+p.category+' '+p.issue).toLowerCase().includes(q))).sort((a,b)=>(b.issue||0)-(a.issue||0)||new Date(b.publishAt||0)-new Date(a.publishAt||0));
+  $('#rows').innerHTML=rows.length?rows.map(p=>{const st=effStatus(p);return `<tr>
+    <td><div class="tt">${swHTML(p)}<div><b>${esc(p.title||'Untitled')}</b><small>${esc(p.category)} · ${words(p.content).toLocaleString()} words</small></div></div></td>
+    <td><span class="st ${st}">${STATUS_LABEL[st]}</span></td>
+    <td style="color:#9fbab7;font-size:13px">${p.publishAt?fmtDT(p.publishAt):'—'}${st==='scheduled'?`<br><span style="color:#8fe0d0;font-size:12px">${countdown(p.publishAt)}</span>`:''}</td>
+    <td>${p.views||0}</td>
+    <td><div class="actions"><a class="abtn sm" href="#/edit/${p.id}">Edit</a>
+      ${st==='live'?`<a class="abtn sm" href="${postUrl(p)}" target="_blank" rel="noopener" title="Open on the blog">↗</a><button class="abtn sm" onclick="unpublish('${p.id}')">Unpublish</button>`:`<button class="abtn sm teal" onclick="publishNow('${p.id}')">Publish now</button>`}
+      <button class="abtn sm li" title="LinkedIn version" onclick="linkedinModal('${p.id}')">${LI}</button>
+      <button class="abtn sm" title="Duplicate" onclick="duplicate('${p.id}')">⧉</button>
+      <button class="abtn sm danger" title="Delete" onclick="delPost('${p.id}')">✕</button></div></td></tr>`}).join(''):'<tr><td colspan="5" style="text-align:center;color:#8eaaa7;padding:40px">No issues found.</td></tr>'}
+
+/* ---------- calendar ---------- */
+function viewCalendar(){
+  const y=calMonth.getFullYear(),m=calMonth.getMonth(),start=weekStart(new Date(y,m,1)),cells=[];
+  for(let i=0;i<42;i++){const d=new Date(start);d.setDate(d.getDate()+i);cells.push(d)}
+  const map={};S.posts.forEach(p=>{if(p.publishAt)(map[dayKey(p.publishAt)]=map[dayKey(p.publishAt)]||[]).push(p)});const today=dayKey(now());
+  return `<div class="topbar"><div><h1>Content calendar</h1><p>Drag scheduled or planned issues to another day. Click an empty day to plan a new issue.</p></div><a class="abtn gold" href="#/new">＋ New issue</a></div>
+  <div class="cal-head"><button class="abtn sm" onclick="calShift(-1)" aria-label="Previous month">‹</button><h2>${calMonth.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h2><button class="abtn sm" onclick="calShift(1)" aria-label="Next month">›</button>
+   <button class="abtn sm" onclick="calMonth=new Date(now().getFullYear(),now().getMonth(),1);route()">Today</button>
+   <div class="legend" style="margin:0 0 0 auto"><span><i style="background:var(--gold)"></i>Published</span><span><i style="background:var(--teal-500)"></i>Scheduled</span><span><i style="border:1px dashed var(--cream)"></i>Planned / draft</span></div></div>
+  <div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dow">${d}</div>`).join('')}
+  ${cells.map(d=>{const k=dayKey(d),evs=(map[k]||[]).sort((a,b)=>new Date(a.publishAt)-new Date(b.publishAt));
+   return `<div class="day ${d.getMonth()!==m?'out':''} ${k===today?'today':''} ${d.getDay()==S.settings.weeklyDay?'slot':''}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropOn(event,'${k}')" onclick="if(event.target===this||event.target.classList.contains('n'))go('#/new/${k}')">
+    <span class="n">${d.getDate()}</span>${evs.map(p=>{const st=effStatus(p);return `<a class="ev ${st}" href="#/edit/${p.id}" ${st!=='live'?`draggable="true" ondragstart="event.dataTransfer.setData('text','${p.id}')"`:''} title="${esc(p.title)} — ${fmtDT(p.publishAt)}">${p.issue?'#'+p.issue+' ':''}${esc(p.title)}</a>`}).join('')}</div>`}).join('')}</div>`}
+function calShift(n){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+n,1);route()}
+async function dropOn(e,k){e.preventDefault();const p=findP(e.dataTransfer.getData('text'));if(!p)return;
+  const o=new Date(p.publishAt),[y,mo,d]=k.split('-').map(Number),nd=new Date(y,mo-1,d,o.getHours(),o.getMinutes());
+  if(p.status==='scheduled'&&nd<=now()){toast('Pick a future date for scheduled issues');return route()}
+  p.publishAt=nd.toISOString();try{await DB.save(p);await DB.log('↔',`Moved “${p.title}” to ${fmtDT(nd)}`);toast('Moved to '+fmtDT(nd))}catch(err){toast('⚠ '+err.message)}
+  route(CLOUD)}
+
+/* =====================================================================
+   EDITOR — autosave, .md import, cover upload, side-by-side preview
+   ===================================================================== */
+const asKey=()=>'fi_autosave_'+(draft&&draft.id||'new');
+function renderEditor(id,dateArg){
+  let restore=null;
+  if(!draft||draft.id!==(id||null)){
+    if(id){const p=findP(id);if(!p){render('',`<p>Issue not found.</p>`);return}draft=JSON.parse(JSON.stringify(p))}
+    else{let when=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime);
+      while(S.posts.some(p=>p.status!=='draft'&&p.publishAt&&dayKey(p.publishAt)===dayKey(when)))when.setDate(when.getDate()+7);
+      if(dateArg){const[y,m,d]=dateArg.split('-').map(Number),[h,mi]=S.settings.weeklyTime.split(':').map(Number);when=new Date(y,m-1,d,h,mi);if(when<=now())when=new Date(Date.now()+3600e3)}
+      draft={id:null,issue:Math.max(0,...S.posts.map(p=>p.issue||0))+1,title:'',slug:'',excerpt:'',content:'',category:'Finance',tags:['FinanceInsights'],coverImg:'',series:true,status:'draft',publishAt:when.toISOString(),views:0}}
+    dirty=false;
+    try{const a=JSON.parse(localStorage.getItem(asKey()));if(a&&a.d&&a.at>Date.parse(draft.updatedAt||0)&&(a.d.content!==draft.content||a.d.title!==draft.title))restore=a}catch(e){}
+  }
+  const cats=[...new Set(['Finance','AI','Career Growth',...S.posts.map(p=>p.category)])];
+  render('',`<div class="ed-top" id="edTop"></div>
+  ${restore?`<div class="alert gold" id="restoreBox"><div>You have unsaved changes from <b>${new Date(restore.at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</b> (${words(restore.d.content).toLocaleString()} words).</div><div style="display:flex;gap:8px"><button class="abtn gold sm" id="rsBtn">Restore</button><button class="abtn sm" onclick="localStorage.removeItem(asKey());$('#restoreBox').remove()">Discard</button></div></div>`:''}
+  <div class="field"><input class="ainput title-in" id="f_title" placeholder="Issue title…" value="${esc(draft.title)}" aria-label="Title"></div>
+  <div class="field"><label for="f_excerpt">Hook / editorial angle</label><textarea class="ainput" id="f_excerpt" rows="2" placeholder="One or two sentences that make people want to read…">${esc(draft.excerpt)}</textarea></div>
+  <div class="meta-grid">
+    <div class="field"><label for="f_issue">Issue #</label><input class="ainput" id="f_issue" type="number" value="${draft.issue||''}"></div>
+    <div class="field"><label for="f_cat">Category</label><input class="ainput" id="f_cat" list="catlist" value="${esc(draft.category)}"><datalist id="catlist">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    <div class="field"><label for="f_tags">Hashtags</label><input class="ainput" id="f_tags" value="${esc((draft.tags||[]).join(', '))}" placeholder="FPandA, Budgeting"></div>
+    <div class="field"><label for="f_slug">Link</label><input class="ainput" id="f_slug" value="${esc(draft.slug)}" placeholder="auto from title"><div class="hint" id="slugHint"></div></div>
+  </div>
+  <div class="field"><span class="lbl">Cover</span><div class="cover-row"><div id="thumb"></div>
+    <button class="abtn sm" onclick="$('#imgFile').click()" id="upBtn">⬆ Upload image</button>
+    <input class="ainput" id="f_img" style="max-width:340px" value="${esc(draft.coverImg)}" placeholder="…or paste an image link (empty = branded cover)">
+    ${draft.coverImg?`<button class="abtn sm danger" onclick="$('#f_img').value='';sync()">Use branded cover</button>`:''}</div></div>
+  <div class="split"><div>
+    <div class="mdbar"><button onclick="ins('## ','')" title="Section heading">H2</button><button onclick="ins('### ','')" title="Sub-heading">H3</button><span class="sep"></span>
+      <button onclick="ins('**','**')" title="Bold"><b>B</b></button><button onclick="ins('*','*')" title="Italic"><i>I</i></button><span class="sep"></span>
+      <button onclick="ins('- ','')">• List</button><button onclick="ins('1. ','')">1.</button><button onclick="ins('> ','')" title="Quote band">❝</button>
+      <button onclick="ins('| Column 1 | Column 2 |\\n|---|---|\\n| ',' |  |')" title="Table">▦</button><button onclick="ins(':: ','')" title="Formula box">ƒ</button><button onclick="ins('[','](https://)')" title="Link">🔗</button>
+      <span class="sp"></span><button onclick="$('#mdFile').click()" style="color:var(--gold-l)">⬆ Import .md</button></div>
+    <textarea class="ainput content" id="f_content" placeholder="Write here — or paste / drop your _article.md file and the title, issue number, hook and hashtags fill in automatically.">${esc(draft.content)}</textarea>
+  </div><div class="pv-wrap"><div class="pv-head"><span>Live preview</span><span id="wc"></span></div><div class="preview" id="preview"></div></div></div>
+  ${draft.id?`<div style="margin-top:22px"><button class="abtn danger" onclick="delPost('${draft.id}')">Delete this issue</button></div>`:''}`);
+  edTop(); updatePreview(); bindEditor();
+  if(restore) $('#rsBtn').onclick=()=>{draft={...draft,...restore.d,id:draft.id};dirty=true;renderEditor(draft.id);toast('Unsaved changes restored')};
+}
+function edTop(){const mode=draft.status,st=draft.id?effStatus(draft):'draft';
+  $('#edTop').innerHTML=`<a class="abtn sm" href="#/plan" title="Back">←</a>
+  <h1>${draft.id?`Issue ${draft.issue?'#'+draft.issue:''}`:'New issue'} <span class="st ${st}">${draft.id?STATUS_LABEL[st]:'New'}</span></h1>
+  <span class="as" id="asInfo">${dirty?'Unsaved changes':''}</span><span class="grow"></span>
+  <div class="seg" role="radiogroup" aria-label="Publishing">${[['draft','Draft'],['scheduled','Schedule'],['published','Publish now']].map(([k,l])=>`<button class="${mode===k?'on':''}" onclick="setMode('${k}')" role="radio" aria-checked="${mode===k}">${l}</button>`).join('')}</div>
+  ${mode!=='published'?`<input type="datetime-local" class="ainput" id="f_when" value="${draft.publishAt?toLocalInput(draft.publishAt):''}" title="${mode==='draft'?'Planned date (optional)':'Goes live at'}" onchange="sync()">
+    <button class="abtn sm" onclick="useSlot()" title="Next free ${DAYS[S.settings.weeklyDay]} ${S.settings.weeklyTime}">⬢ Issue day</button>`:''}
+  <button class="abtn sm" onclick="previewAsReader()">👁 Preview</button>
+  <button class="abtn sm li" onclick="linkedinModal(null)" title="LinkedIn version">${LI}</button>
+  <button class="abtn gold" id="saveBtn" onclick="savePost()">${mode==='published'?(draft.id&&isLive(findP(draft.id)||{})?'💾 Update':'🚀 Publish now'):mode==='scheduled'?'🗓 Schedule':'💾 Save draft'}</button>`}
+function bindEditor(){
+  ['f_title','f_excerpt','f_issue','f_cat','f_tags','f_slug','f_img','f_content'].forEach(i=>$('#'+i).addEventListener('input',sync));
+  const ta=$('#f_content');
+  ta.addEventListener('paste',e=>{const t=(e.clipboardData||window.clipboardData).getData('text');
+    if(/^\s*#\s+\S/.test(t)&&(!ta.value.trim()||(ta.selectionStart===0&&ta.selectionEnd===ta.value.length))){e.preventDefault();applyMd(t)}});
+  ta.addEventListener('dragover',e=>{e.preventDefault();ta.classList.add('drag')});
+  ta.addEventListener('dragleave',()=>ta.classList.remove('drag'));
+  ta.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];ta.classList.remove('drag');if(!f)return;e.preventDefault();
+    if(f.type.startsWith('image/'))return uploadCover(f);f.text().then(applyMd)});
+  ta.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();savePost()}
+    if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();ins('**','**')}});
+}
+$('#mdFile').addEventListener('change',e=>{const f=e.target.files[0];if(f)f.text().then(applyMd);e.target.value=''});
+$('#imgFile').addEventListener('change',e=>{const f=e.target.files[0];if(f)uploadCover(f);e.target.value=''});
+function applyMd(text){const o=parseArticleMd(text),got=[];
+  if(o.title){$('#f_title').value=o.title;got.push('title')}
+  if(o.issue){$('#f_issue').value=o.issue;got.push('issue #'+o.issue)}
+  if(o.excerpt&&!$('#f_excerpt').value.trim()){$('#f_excerpt').value=o.excerpt;got.push('hook')}
+  if(o.tags){$('#f_tags').value=o.tags.join(', ');got.push(o.tags.length+' hashtags')}
+  if(o.category&&(!draft.id||!draft.content.trim())){$('#f_cat').value=o.category;got.push('category')}
+  $('#f_content').value=o.content;sync();
+  toast(got.length?'Filled in: '+got.join(', '):'Article imported')}
+async function uploadCover(f){const b=$('#upBtn');b.disabled=true;b.textContent='Uploading…';
+  try{const url=await DB.uploadCover(f,draft.slug||draft.title);$('#f_img').value=url;sync();toast('Cover uploaded')}
+  catch(e){toast('⚠ '+(e.message||'Upload failed')+(CLOUD?' — check the “covers” bucket exists in Supabase Storage':''))}
+  b.disabled=false;b.textContent='⬆ Upload image'}
+function sync(){
+  draft.title=$('#f_title').value;draft.excerpt=$('#f_excerpt').value;draft.content=$('#f_content').value;draft.category=$('#f_cat').value;
+  draft.issue=parseInt($('#f_issue').value)||null;draft.tags=$('#f_tags').value.split(',').map(t=>t.trim().replace(/^#/,'')).filter(Boolean);
+  draft.slug=$('#f_slug').value.trim();draft.coverImg=$('#f_img').value.trim();
+  const w=$('#f_when');if(w&&w.value)draft.publishAt=new Date(w.value).toISOString();
+  dirty=true;$('#asInfo').textContent='Unsaved changes';
+  clearTimeout(asTimer);asTimer=setTimeout(autosave,700);updatePreview()}
+function autosave(){if(!draft||!dirty)return;localStorage.setItem(asKey(),JSON.stringify({at:Date.now(),d:draft}));const i=$('#asInfo');if(i)i.textContent='Autosaved '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+addEventListener('beforeunload',e=>{if(draft&&dirty){autosave()}});
+function updatePreview(){const pv=$('#preview');if(!pv)return;const w=words(draft.content);
+  $('#wc').textContent=`${w.toLocaleString()} words · ${readTime(draft.content)} min read`;
+  $('#thumb').innerHTML=coverHTML(draft,'thumb');
+  $('#slugHint').textContent='/post/'+slugify(draft.slug||draft.title);
+  const top=pv.scrollTop;
+  pv.innerHTML=`${coverHTML(draft)}<div class="mt">${draft.issue?'ISSUE '+draft.issue+' · ':''}${esc(draft.category)} · ${readTime(draft.content)} min read</div>
+  <h1 dir="auto">${esc(draft.title||'Your title here')}</h1>${draft.excerpt?`<p class="ex" dir="auto">${esc(draft.excerpt)}</p>`:''}<div class="prose" dir="auto">${md(draft.content).html||'<p style="color:#9aa">Start writing to see the preview…</p>'}</div>`;
+  pv.scrollTop=top}
+function ins(a,b){a=a.replace(/\\n/g,'\n');b=b.replace(/\\n/g,'\n');const t=$('#f_content'),s=t.selectionStart,e=t.selectionEnd,sel=t.value.slice(s,e);
+  const nl=!b.trim()&&s>0&&t.value[s-1]!=='\n'?'\n':'';t.value=t.value.slice(0,s)+nl+a+sel+b+t.value.slice(e);t.focus();const pos=s+nl.length+a.length+sel.length;t.setSelectionRange(pos,pos);sync()}
+function setMode(m){sync();draft.status=m;
+  if(m==='scheduled'&&(!draft.publishAt||new Date(draft.publishAt)<=now()))draft.publishAt=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime).toISOString();
+  edTop()}
+function useSlot(){const d=nextSlot(now(),+S.settings.weeklyDay,S.settings.weeklyTime);
+  while(S.posts.some(p=>p.id!==draft.id&&p.status==='scheduled'&&dayKey(p.publishAt)===dayKey(d)))d.setDate(d.getDate()+7);
+  $('#f_when').value=toLocalInput(d);sync();toast('Set to '+fmtDT(d))}
+function previewAsReader(){sync();const slug=slugify(draft.slug||draft.title||'draft');
+  localStorage.setItem('fi_preview',JSON.stringify({...draft,slug}));window.open('/post/'+encodeURIComponent(slug)+'?preview=1','_blank')}
+async function savePost(){
+  sync();if(!draft.title.trim())return toast('Please add a title');
+  const prev=draft.id&&findP(draft.id);
+  if(draft.status==='published'&&!(prev&&isLive(prev)))draft.publishAt=new Date().toISOString();
+  if(draft.status==='scheduled'&&(!draft.publishAt||new Date(draft.publishAt)<=now()))return toast('Choose a future date & time to schedule');
+  draft.category=(draft.category||'').trim()||'Finance';
+  let slug=slugify(draft.slug||draft.title),n=2,base=slug;while(S.posts.some(p=>p.slug===slug&&p.id!==draft.id))slug=base+'-'+(n++);draft.slug=slug;
+  const oldKey=asKey(),isNew=!draft.id;if(isNew)draft.id=uuid();
+  const msg=draft.status==='published'?(prev&&isLive(prev)?'Updated':'Published'):draft.status==='scheduled'?'Scheduled for '+fmtDT(draft.publishAt):'Draft saved';
+  $('#saveBtn').disabled=true;
+  try{await DB.save(JSON.parse(JSON.stringify(draft)));await DB.log(isNew?'✚':'✎',`${msg}: “${draft.title}”`);
+    localStorage.removeItem(oldKey);localStorage.removeItem('fi_autosave_'+draft.id);dirty=false;
+    toast((draft.status==='published'?'🚀 ':draft.status==='scheduled'?'🗓 ':'💾 ')+msg);
+    if(draft.status==='draft'){ if(isNew) history.replaceState(null,'','#/edit/'+draft.id); draft=JSON.parse(JSON.stringify(findP(draft.id))); edTop(); $('#asInfo').textContent='Saved' }
+    else { const st=draft.status;draft=null;go(st==='scheduled'?'#/calendar':'#/posts') }}
+  catch(e){if(isNew)draft.id=null;$('#saveBtn').disabled=false;toast('⚠ '+e.message)}}
+
+/* ---------- row actions ---------- */
+async function act(fn,msg){try{await fn();toast(msg);await route(CLOUD)}catch(e){toast('⚠ '+e.message)}}
+function publishNow(id){const p=findP(id);p.status='published';p.publishAt=new Date().toISOString();act(async()=>{await DB.save(p);await DB.log('🚀',`Published “${p.title}”`)},'🚀 Published')}
+function unpublish(id){const p=findP(id);p.status='draft';act(async()=>{await DB.save(p);await DB.log('↩',`Unpublished “${p.title}”`)},'Moved to drafts')}
+function duplicate(id){const p=JSON.parse(JSON.stringify(findP(id)));Object.assign(p,{id:uuid(),title:p.title+' (copy)',slug:p.slug+'-copy-'+Date.now().toString(36).slice(-4),status:'draft',publishAt:'',views:0,issue:null});
+  act(async()=>{await DB.save(p);await DB.log('⧉',`Duplicated “${p.title}”`)},'Duplicated as draft')}
+function delPost(id){const p=findP(id)||draft;if(!confirm(`Delete “${p.title}”? This cannot be undone.`))return;
+  localStorage.removeItem('fi_autosave_'+id);draft=null;dirty=false;
+  act(async()=>{await DB.remove(id);await DB.log('✕',`Deleted “${p.title}”`);go('#/posts')},'Deleted')}
+
+/* ---------- LinkedIn version ---------- */
+function linkedinModal(id){
+  if(!id)sync(); const p=id?findP(id):draft;if(!p)return;
+  const heads=[];(p.content||'').split('\n').forEach(l=>{const m=l.match(/^##\s+(.*)/);if(m&&heads.length<7&&!/your turn|takeaway|introduction|hook|framework/i.test(m[1]))heads.push(m[1].replace(/\*/g,'').replace(/^\d+\.\s*/,''))});
+  const q=((p.content||'').match(/\*\*([^*]*\?)\*\*/g)||[]).pop();
+  const url=location.origin+'/post/'+encodeURIComponent(p.slug||slugify(p.title));
+  const txt=`${p.title}\n\nFinance Insights${p.issue?' · Issue '+p.issue:''}\n\n${p.excerpt}\n\n${heads.length?'In this issue:\n'+heads.map(h=>'▸ '+h).join('\n')+'\n\n':''}${q?'💬 '+q.replace(/\*/g,'')+'\n\n':''}📖 Read the full issue: ${url}\n\n${(p.tags||[]).map(t=>'#'+t.replace(/\s+/g,'')).join(' ')}`;
+  openModal(`<h3>${LI} LinkedIn version</h3><p class="sub">Generated from this issue. Edit, copy, then paste into LinkedIn.</p>
+  <textarea class="ainput" id="liText">${esc(txt)}</textarea><div class="hint" id="liCount">${txt.length} / 3,000 characters</div>
+  <div class="row"><button class="abtn" onclick="closeModal()">Close</button><a class="abtn li" href="https://www.linkedin.com/feed/" target="_blank" rel="noopener">${LI} Open LinkedIn</a><button class="abtn gold" onclick="navigator.clipboard.writeText($('#liText').value);toast('Copied — paste into LinkedIn')">Copy text</button></div>`);
+  $('#liText').oninput=e=>$('#liCount').textContent=e.target.value.length+' / 3,000 characters'}
+
+/* ---------- settings ---------- */
+function viewSettings(){const s=S.settings;
+  return `<div class="topbar"><div><h1>Settings</h1><p>Blog identity, issue day${CLOUD?'':', PIN'} and backups.</p></div></div>
+  <div class="panels"><div class="panel"><h3>Blog identity</h3>
+    ${[['s_name','Blog name',s.blogName],['s_tag','Tagline',s.tagline],['s_author','Author',s.author],['s_role','Author headline',s.role],['s_li','LinkedIn newsletter link',s.linkedin]].map(([i,l,v])=>`<div class="field"><label for="${i}">${l}</label><input class="ainput" id="${i}" value="${esc(v)}"></div>`).join('')}</div>
+  <div><div class="panel" style="margin-bottom:20px"><h3>Weekly issue day</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="field"><label for="s_day">Day</label><select class="ainput" id="s_day">${DAYS.map((d,i)=>`<option value="${i}" ${i==s.weeklyDay?'selected':''}>${d}</option>`).join('')}</select></div>
+    <div class="field"><label for="s_time">Time</label><input type="time" class="ainput" id="s_time" value="${s.weeklyTime}"></div></div>
+    <label class="check"><input type="checkbox" id="s_up" ${s.showUpcoming?'checked':''}> Show “Coming up” on the blog</label></div>
+    <div class="panel" style="margin-bottom:20px"><h3>Your dashboard</h3><p class="hint" style="margin:0">Bookmark <b style="color:var(--gold-l)">${esc(location.origin)}/admin/</b> — there is no dashboard button on the public blog.${CLOUD?`<br>Signed in as ${esc(AUTH.user?.email)}.`:''}</p>
+      ${CLOUD?'':`<div class="field" style="margin-top:12px"><label for="s_pin">Local PIN</label><input class="ainput" id="s_pin" value="${esc(s.pin)}" maxlength="8"></div>`}</div>
+    <div class="panel"><h3>Backup</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="abtn" onclick="exportData()">⬇ Export JSON</button></div><p class="hint">Downloads every issue and your settings as one file.</p></div></div></div>
+  <button class="abtn gold" style="padding:13px 26px" onclick="saveSettings()">Save settings</button>`}
+async function saveSettings(){const s={...S.settings,blogName:$('#s_name').value||'Finance Insights',tagline:$('#s_tag').value,author:$('#s_author').value||'Author',role:$('#s_role').value,linkedin:$('#s_li').value,weeklyDay:+$('#s_day').value,weeklyTime:$('#s_time').value||'08:00',showUpcoming:$('#s_up').checked};
+  if($('#s_pin'))s.pin=$('#s_pin').value||'1234';
+  act(async()=>{await DB.saveSettings(s);await DB.log('⚙','Settings updated')},'Settings saved')}
+function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({settings:S.settings,posts:S.posts},null,2)],{type:'application/json'}));a.download=`finance-insights-backup-${dayKey(now())}.json`;a.click()}
+
+/* ---------- modal ---------- */
+function openModal(h){$('#modal').innerHTML=h;$('#modalBg').classList.add('show')}
+function closeModal(){$('#modalBg').classList.remove('show')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ---------- refresh the dashboard every minute (never while editing; keeps scroll) ---------- */
+setInterval(()=>{
+  if(!AUTH.isAdmin||$('#modalBg').classList.contains('show'))return;
+  const v=viewName(); if(v==='new'||v==='edit')return;
+  const el=document.activeElement; if(el&&['INPUT','TEXTAREA','SELECT'].includes(el.tagName))return;
+  const y=scrollY; DB.publishDue().then(n=>{if(n)toast(`⚡ ${n} scheduled issue${n>1?'s':''} went live`);return route(CLOUD)}).then(()=>scrollTo(0,y));
+},60000);
+
+(async()=>{
+  $('#loadMark').innerHTML=markSVG('lm');
+  try{await DB.init();
+    if(CLOUD) sb.auth.onAuthStateChange(async(ev,s)=>{ if(ev==='PASSWORD_RECOVERY'){await setUser(s?.user||null);newPasswordModal()} });
+    if(AUTH.isAdmin){await DB.load(true);await DB.publishDue()}
+  }catch(e){console.error(e);toast('⚠ '+(e.message||'Startup error'))}
+  route();
+})();
+</script>
+</body>
+</html>
